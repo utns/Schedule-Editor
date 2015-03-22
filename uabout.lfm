@@ -1,0 +1,38 @@
+object FormAbout: TFormAbout
+  Left = 1598
+  Height = 100
+  Top = 562
+  Width = 320
+  Caption = 'О программе'
+  ClientHeight = 100
+  ClientWidth = 320
+  Constraints.MaxHeight = 100
+  Constraints.MaxWidth = 320
+  Constraints.MinHeight = 100
+  Constraints.MinWidth = 320
+  LCLVersion = '1.2.4.0'
+  object Label1: TLabel
+    Left = 16
+    Height = 15
+    Top = 16
+    Width = 245
+    Caption = 'Автор: Утин Никита Сергеевич Б8103а'
+    ParentColor = False
+  end
+  object Label2: TLabel
+    Left = 16
+    Height = 15
+    Top = 46
+    Width = 294
+    Caption = 'Преподаватель: Кленин Александр Сергеевич'
+    ParentColor = False
+  end
+  object Label3: TLabel
+    Left = 16
+    Height = 15
+    Top = 76
+    Width = 57
+    Caption = '2015 год'
+    ParentColor = False
+  end
+end

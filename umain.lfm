@@ -1,0 +1,30 @@
+object MainForm: TMainForm
+  Left = 661
+  Height = 20
+  Top = 259
+  Width = 230
+  Caption = 'Расписание'
+  Constraints.MaxHeight = 20
+  Constraints.MaxWidth = 230
+  Constraints.MinHeight = 20
+  Constraints.MinWidth = 230
+  Menu = MainMenu
+  OnCreate = FormCreate
+  LCLVersion = '1.2.4.0'
+  object MainMenu: TMainMenu
+    left = 32
+    top = 32
+    object MenuItemReference: TMenuItem
+      Caption = 'Справочник'
+    end
+    object MenuItemAbout: TMenuItem
+      Caption = 'О программе'
+      OnClick = MenuItemAboutClick
+    end
+    object MenuItemExit: TMenuItem
+      Caption = 'Выход'
+      ShortCut = 16465
+      OnClick = MenuItemExitClick
+    end
+  end
+end

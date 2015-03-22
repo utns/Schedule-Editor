@@ -1,0 +1,96 @@
+object FormListView: TFormListView
+  Left = 1335
+  Height = 525
+  Top = 18
+  Width = 527
+  Caption = 'FormListView'
+  ClientHeight = 525
+  ClientWidth = 527
+  OnClose = FormClose
+  LCLVersion = '1.2.4.0'
+  object DBNavigator: TDBNavigator
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = DBGrid
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 30
+    Top = 495
+    Width = 527
+    Anchors = [akLeft, akRight, akBottom]
+    BevelOuter = bvNone
+    ChildSizing.EnlargeHorizontal = crsScaleChilds
+    ChildSizing.EnlargeVertical = crsScaleChilds
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 100
+    ClientHeight = 30
+    ClientWidth = 527
+    DataSource = DataSource
+    Options = []
+    TabOrder = 0
+    VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast]
+  end
+  object DBGrid: TDBGrid
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 495
+    Top = 0
+    Width = 527
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Bottom = 30
+    Color = clWindow
+    Columns = <>
+    DataSource = DataSource
+    TabOrder = 1
+  end
+  object SQLQuery: TSQLQuery
+    FieldDefs = <    
+      item
+        Name = 'ID'
+        DataType = ftInteger
+        Precision = -1
+        Size = 0
+      end    
+      item
+        Name = 'NAME'
+        DataType = ftString
+        Precision = -1
+        Size = 60
+      end    
+      item
+        Name = 'AGE'
+        DataType = ftSmallint
+        Precision = -1
+        Size = 0
+      end    
+      item
+        Name = 'GROUPID'
+        DataType = ftInteger
+        Precision = -1
+        Size = 0
+      end>
+    Database = DataModuleMain.IBConnection
+    Transaction = DataModuleMain.SQLTransaction
+    SQL.Strings = (
+      'SELECT * FROM Students;'
+    )
+    Params = <>
+    left = 280
+    top = 16
+  end
+  object DataSource: TDataSource
+    DataSet = SQLQuery
+    left = 280
+    top = 80
+  end
+end

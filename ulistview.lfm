@@ -1,7 +1,7 @@
 object FormListView: TFormListView
-  Left = 1335
+  Left = 1229
   Height = 525
-  Top = 18
+  Top = 0
   Width = 527
   Caption = 'FormListView'
   ClientHeight = 525

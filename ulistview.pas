@@ -17,9 +17,9 @@ type
     DBGrid: TDBGrid;
     DBNavigator: TDBNavigator;
     SQLQuery: TSQLQuery;
-    procedure CreateNew(AName, ACaption: String);
+    procedure CreateNew(AName, ACaption: String; ATag: Integer);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure EditTable(AForm: TFormListView; AName: String);
+    procedure SetTableColumns(AForm: TFormListView; ACurTab: Integer);
   private
     { private declarations }
   public
@@ -35,7 +35,7 @@ implementation
 
 { TFormListView }
 
-procedure TFormListView.CreateNew(AName, ACaption: String);
+procedure TFormListView.CreateNew(AName, ACaption: String; ATag: Integer);
 var
   AForm: TFormListView;
 begin
@@ -44,9 +44,9 @@ begin
   AForm.Name := AName;
   AForm.SQLQuery.Close;
   AForm.SQLQuery.SQL.Clear;
-  AForm.SQLQuery.SQL.AddStrings(EditSQlQuery(AName));
+  AForm.SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery);
   AForm.SQLQuery.Open;
-  EditTable(AForm, AName);
+  SetTableColumns(AForm, ATag);
   AForm.Show;
 end;
 
@@ -55,19 +55,17 @@ begin
   CloseAction := caFree;
 end;
 
-procedure TFormListView.EditTable(AForm: TFormListView; AName: String);
+procedure TFormListView.SetTableColumns(AForm: TFormListView; ACurTab: Integer);
 var
-  i, j, CurTab: Integer;
+  i, j: Integer;
 begin
-  for i := 0 to High(Tables) do
-    if Tables[i].Name = AName then
-      CurTab := i;
   for i := 0 to AForm.DBGrid.Columns.Count - 1 do
-    for j := 0 to Tables[CurTab].GetFieldsLength - 1 do
-      if AForm.DBGrid.Columns[i].Title.Caption = UpperCase(Tables[CurTab].Fields[j].Name)  then
+    for j := 0 to Tables[ACurTab].GetFieldsLength - 1 do
+      if AForm.DBGrid.Columns[i].Title.Caption = UpperCase(Tables[ACurTab].Fields[j].Name)  then
       begin
-        AForm.DBGrid.Columns[i].Title.Caption := Tables[CurTab].Fields[j].Caption;
-        AForm.DBGrid.Columns[i].Width := Tables[CurTab].Fields[j].Width;
+        AForm.DBGrid.Columns[i].Title.Caption := Tables[ACurTab].Fields[j].Caption;
+        AForm.DBGrid.Columns[i].Width := Tables[ACurTab].Fields[j].Width;
+        AForm.DBGrid.Columns[i].Visible := Tables[ACurTab].Fields[j].Visible;
       end;
 end;
 

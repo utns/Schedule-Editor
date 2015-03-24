@@ -1,5 +1,5 @@
 object FormAbout: TFormAbout
-  Left = 1598
+  Left = 1467
   Height = 100
   Top = 562
   Width = 320

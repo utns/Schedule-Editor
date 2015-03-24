@@ -18,7 +18,7 @@ type
     MenuItemExit: TMenuItem;
     MenuItemReference: TMenuItem;
     procedure FormCreate(Sender: TObject);
-    procedure AddReferenceItem(AName, ACaption: String);
+    procedure AddReferenceItem(AName, ACaption: String; ATag: Integer);
     procedure MenuItemAboutClick(Sender: TObject);
     procedure MenuItemClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
@@ -40,7 +40,7 @@ var
   i: Integer;
 begin
   Result := False;
-  for i := Screen.FormCount - 1 DownTo 0 do
+  for i := 0 To Screen.FormCount - 1 do
     if (Screen.Forms[i].Name = AName) then
     begin
       Result := True;
@@ -58,16 +58,17 @@ var
   i: Integer;
 begin
   for i := 0 to High(Tables) do
-    AddReferenceItem(Tables[i].Name, Tables[i].Caption);
+    AddReferenceItem(Tables[i].Name, Tables[i].Caption, i);
 end;
 
-procedure TMainForm.AddReferenceItem(AName, ACaption: String);
+procedure TMainForm.AddReferenceItem(AName, ACaption: String; ATag: Integer);
 var
   AReferenceItem: TMenuItem;
 begin
   AReferenceItem := TMenuItem.Create(MainMenu);
   AReferenceItem.Caption := ACaption;
   AReferenceItem.Name := AName;
+  AReferenceItem.Tag := ATag;
   AReferenceItem.OnClick := @MenuItemClick;
   MenuItemReference.Add(AReferenceItem);
 end;
@@ -80,7 +81,7 @@ end;
 procedure TMainForm.MenuItemClick(Sender: TObject);
 begin
   if not(IsFormOpen((Sender as TMenuItem).Name)) then
-    FormListView.CreateNew((Sender as TMenuItem).Name, (Sender as TMenuItem).Caption);
+    FormListView.CreateNew((Sender as TMenuItem).Name, (Sender as TMenuItem).Caption, (Sender as TMenuItem).Tag);
 end;
 
 procedure TMainForm.MenuItemExitClick(Sender: TObject);

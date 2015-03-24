@@ -7,40 +7,39 @@ interface
 uses
   Classes, SysUtils, UMetadata;
 
-function EditSQlQuery(ATableName: String): String;
+function EditSQlQuery(ACurTab: Integer): String;
 
 implementation
 
-function EditSQlQuery(ATableName: String): String;
+function EditSQlQuery(ACurTab: Integer): String;
 var
-  i, CurTab: Integer;
+  i: Integer;
 begin
-  for i := 0 to High(Tables) do
-    if Tables[i].Name = ATableName then
-      CurTab := i;
-
-  if (Tables[CurTab].Fields[0] is TMyJoinedField) then
-    Result := 'Select ' + (Tables[CurTab].Fields[0] as TMyJoinedField).JoinedTable
-    + '.' + (Tables[CurTab].Fields[0] as TMyJoinedField).VisField + ' AS ' + Tables[CurTab].Fields[0].Name
-  else
-    Result := 'Select ' + Tables[CurTab].Name + '.' + Tables[CurTab].Fields[0].Name;
-
-  for i := 1 to Tables[CurTab].GetFieldsLength - 1 do
-    if (Tables[CurTab].Fields[i] is TMyJoinedField) then
-      Result += ', ' + (Tables[CurTab].Fields[i] as TMyJoinedField).JoinedTable
-        + '.' + (Tables[CurTab].Fields[i] as TMyJoinedField).VisField + ' AS ' + Tables[CurTab].Fields[i].Name
+  with Tables[ACurTab] do
+  begin
+    if (Fields[0] is TMyJoinedField) then
+      Result := 'Select ' + (Fields[0] as TMyJoinedField).JoinedTable
+      + '.' + (Fields[0] as TMyJoinedField).VisField + ' AS ' + Fields[0].Name
     else
-      Result += ', ' + Tables[CurTab].Name + '.' + Tables[CurTab].Fields[i].Name;
+      Result := 'Select ' + Name + '.' + Fields[0].Name;
 
-  Result += ' FROM ' + ATableName;
+    for i := 1 to GetFieldsLength - 1 do
+      if (Fields[i] is TMyJoinedField) then
+        Result += ', ' + (Fields[i] as TMyJoinedField).JoinedTable
+          + '.' + (Fields[i] as TMyJoinedField).VisField + ' AS ' + Fields[i].Name
+      else
+        Result += ', ' + Name + '.' + Fields[i].Name;
 
-  for i := 0 to Tables[CurTab].GetFieldsLength - 1 do
-    if Tables[CurTab].Fields[i] is TMyJoinedField then
-      Result += ' INNER JOIN ' + (Tables[CurTab].Fields[i] as TMyJoinedField).JoinedTable
-        + ' ON ' + Tables[CurTab].Name + '.' + Tables[CurTab].Fields[i].Name
-        + ' = ' + (Tables[CurTab].Fields[i] as TMyJoinedField).JoinedTable + '.'
-        + (Tables[CurTab].Fields[i] as TMyJoinedField).JoinedField;
-  Result += ' ORDER BY 1, 2';
+    Result += ' FROM ' + Name;
+
+    for i := 0 to GetFieldsLength - 1 do
+      if Fields[i] is TMyJoinedField then
+        Result += ' INNER JOIN ' + (Fields[i] as TMyJoinedField).JoinedTable
+          + ' ON ' + Name + '.' + Fields[i].Name
+          + ' = ' + (Fields[i] as TMyJoinedField).JoinedTable + '.'
+          + (Fields[i] as TMyJoinedField).JoinedField;
+    Result += ' ORDER BY 1, 2';
+  end;
 end;
 
 end.

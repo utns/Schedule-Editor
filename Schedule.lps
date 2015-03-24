@@ -12,7 +12,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="73" Y="10"/>
-        <UsageCount Value="58"/>
+        <UsageCount Value="59"/>
       </Unit0>
       <Unit1>
         <Filename Value="umain.pas"/>
@@ -25,7 +25,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="28"/>
         <CursorPos X="85" Y="84"/>
-        <UsageCount Value="58"/>
+        <UsageCount Value="59"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -40,7 +40,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="30" Y="15"/>
-        <UsageCount Value="58"/>
+        <UsageCount Value="59"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit2>
@@ -51,9 +51,9 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="172"/>
-        <CursorPos X="58" Y="193"/>
-        <UsageCount Value="58"/>
+        <TopLine Value="6"/>
+        <CursorPos X="19" Y="32"/>
+        <UsageCount Value="59"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
@@ -67,7 +67,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="21"/>
         <CursorPos X="13" Y="65"/>
-        <UsageCount Value="58"/>
+        <UsageCount Value="59"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit4>
@@ -82,7 +82,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="43" Y="25"/>
-        <UsageCount Value="45"/>
+        <UsageCount Value="46"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit5>
@@ -93,8 +93,8 @@
         <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="71" Y="24"/>
-        <UsageCount Value="33"/>
+        <CursorPos X="65" Y="24"/>
+        <UsageCount Value="34"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
@@ -149,7 +149,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1748"/>
         <CursorPos X="22" Y="1764"/>
-        <UsageCount Value="12"/>
+        <UsageCount Value="13"/>
         <Loaded Value="True"/>
       </Unit13>
       <Unit14>
@@ -165,124 +165,124 @@
     </General>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="umain.pas"/>
-        <Caret Line="21" Column="15" TopLine="21"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="223" Column="16" TopLine="182"/>
       </Position1>
       <Position2>
-        <Filename Value="umain.pas"/>
-        <Caret Line="64" Column="76" TopLine="56"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="224" Column="16" TopLine="182"/>
       </Position2>
       <Position3>
-        <Filename Value="umain.pas"/>
-        <Caret Line="61" Column="53" TopLine="53"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="225" Column="16" TopLine="182"/>
       </Position3>
       <Position4>
-        <Filename Value="usqlqueries.pas"/>
-        <Caret Line="20" Column="20" TopLine="8"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="226" Column="16" TopLine="182"/>
       </Position4>
       <Position5>
-        <Filename Value="usqlqueries.pas"/>
-        <Caret Line="10" Column="10" TopLine="1"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="229" Column="16" TopLine="184"/>
       </Position5>
       <Position6>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="47" Column="50" TopLine="32"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="230" Column="16" TopLine="185"/>
       </Position6>
       <Position7>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="38" Column="25" TopLine="21"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="233" Column="3" TopLine="188"/>
       </Position7>
       <Position8>
-        <Filename Value="umain.pas"/>
-        <Caret Line="74" Column="32" TopLine="61"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="234" Column="3" TopLine="189"/>
       </Position8>
       <Position9>
-        <Filename Value="umain.pas"/>
-        <Caret Line="84" Column="85" TopLine="61"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="235" Column="3" TopLine="190"/>
       </Position9>
       <Position10>
-        <Filename Value="usqlqueries.pas"/>
-        <Caret Line="21" Column="17" TopLine="14"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="236" Column="3" TopLine="191"/>
       </Position10>
       <Position11>
-        <Filename Value="usqlqueries.pas"/>
-        <Caret Line="26" Column="37" TopLine="1"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="237" Column="3" TopLine="192"/>
       </Position11>
       <Position12>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="64" Column="11" TopLine="41"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="238" Column="3" TopLine="193"/>
       </Position12>
       <Position13>
-        <Filename Value="umain.pas"/>
-        <Caret Line="84" Column="85" TopLine="61"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="239" Column="3" TopLine="194"/>
       </Position13>
       <Position14>
-        <Filename Value="..\..\..\..\..\..\usr\share\fpcsrc\2.6.4\rtl\objpas\classes\classesh.inc"/>
-        <Caret Line="1764" Column="22" TopLine="1748"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="242" Column="3" TopLine="197"/>
       </Position14>
       <Position15>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="46" Column="37" TopLine="21"/>
+        <Caret Line="235" Column="7" TopLine="198"/>
       </Position15>
       <Position16>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="251" Column="33" TopLine="203"/>
+        <Caret Line="31" Column="12" TopLine="5"/>
       </Position16>
       <Position17>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="67" Column="18" TopLine="53"/>
+        <Caret Line="33" Column="62" TopLine="7"/>
       </Position17>
       <Position18>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="72" Column="4" TopLine="40"/>
+        <Caret Line="34" Column="20" TopLine="7"/>
       </Position18>
       <Position19>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="130" Column="1" TopLine="104"/>
+        <Caret Line="35" Column="22" TopLine="8"/>
       </Position19>
       <Position20>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="47" Column="50" TopLine="1"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="31" Column="63" TopLine="5"/>
       </Position20>
       <Position21>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="204" Column="49" TopLine="178"/>
+        <Caret Line="36" Column="25" TopLine="10"/>
       </Position21>
       <Position22>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="47" Column="1" TopLine="20"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="31" Column="49" TopLine="5"/>
       </Position22>
       <Position23>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="48" Column="1" TopLine="20"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="36" Column="25" TopLine="5"/>
       </Position23>
       <Position24>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="47" Column="1" TopLine="20"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="32" Column="6" TopLine="10"/>
       </Position24>
       <Position25>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="48" Column="1" TopLine="20"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="53" Column="22" TopLine="32"/>
       </Position25>
       <Position26>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="47" Column="1" TopLine="20"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="174" Column="50" TopLine="174"/>
       </Position26>
       <Position27>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="80" Column="33" TopLine="46"/>
+        <Caret Line="53" Column="93" TopLine="27"/>
       </Position27>
       <Position28>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="79" Column="28" TopLine="53"/>
+        <Caret Line="54" Column="77" TopLine="27"/>
       </Position28>
       <Position29>
         <Filename Value="umetadata.pas"/>
-        <Caret Line="166" Column="78" TopLine="162"/>
+        <Caret Line="39" Column="51" TopLine="13"/>
       </Position29>
       <Position30>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="68" Column="72" TopLine="20"/>
+        <Filename Value="umetadata.pas"/>
+        <Caret Line="32" Column="6" TopLine="6"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>

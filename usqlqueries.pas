@@ -19,16 +19,18 @@ begin
   begin
     if (Fields[0] is TMyJoinedField) then
       Result := 'Select ' + (Fields[0] as TMyJoinedField).ReferencedTable
-      + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName + ' AS ' + Fields[0].Name
+      + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName //+ ' AS ' + Fields[0].Name
     else
       Result := 'Select ' + Name + '.' + Fields[0].Name;
 
     for i := 1 to GetFieldsLength - 1 do
+    begin
       if (Fields[i] is TMyJoinedField) then
         Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
-          + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName + ' AS ' + Fields[i].Name
-      else
+          + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName; //+ ' AS ' + Fields[i].Name
+      //else
         Result += ', ' + Name + '.' + Fields[i].Name;
+    end;
 
     Result += ' FROM ' + Name;
 

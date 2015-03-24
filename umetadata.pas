@@ -29,13 +29,17 @@ type
   TMyJoinedField = class(TMyField)
   private
     FReferencedTable, FReferencedField, FJoinedFieldName, FJoinedFieldCaption: String;
+    FJoinedWidth: Integer;
     FJoinedVisible: Boolean;
   public
-    Constructor Create(AName, ACaption, AReferencedTable, AReferencedField, AVisField: String; AWidth: Integer);
+    Constructor Create(AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
+      AReferencedTable, AReferencedField, AJoinedFieldName, AJoinedFieldCaption: String;
+      AJoinedWidth: Integer; AJoinedVisible: Boolean);
     property ReferencedTable: String read FReferencedTable;
     property ReferencedField: String read FReferencedField;
     property JoinedFieldName: String read FJoinedFieldName;
     property JoinedFieldCaption: String read FJoinedFieldCaption;
+    property JoinedFieldWidth: Integer read FJoinedWidth;
     property JoinedVisible: Boolean read FJoinedVisible;
   end;
 
@@ -50,8 +54,9 @@ type
     Constructor Create(AName, ACaption: String);
     function CreateSqlQuery: String;
     procedure AddNewField(AName, ACaption: String; AWidth: Integer; AVisible: Boolean);
-    procedure AddNewField(AName, ACaption, AJoinedTable, AJoinedFieldName, AVisField: String;
-      AWidth: Integer);
+    procedure AddNewField(AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
+      AReferencedTable, AReferencedField, AJoinedFieldName, AJoinedFieldCaption: String;
+      AJoinedWidth: Integer; AJoinedVisible: Boolean);
     function GetFieldsLength: Integer;
     property Name: String read FName;
     property Caption: String read FCaption;
@@ -86,28 +91,34 @@ begin
     end;
 end;
 
-procedure RegisterTableField(ATableName, AName, ACaption, AJoinedTable, AJoinedFieldName, AVisField: String;
-  AWidth: Integer);
+procedure RegisterTableField(ATableName, AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
+      AReferencedTable, AReferencedField, AJoinedFieldName, AJoinedFieldCaption: String;
+      AJoinedWidth: Integer; AJoinedVisible: Boolean);
 var
   i: Integer;
 begin
   for i := 0 to High(Tables) do
     if Tables[i].Name = ATableName then
     begin                                   //плохо
-      Tables[i].AddNewField(AName, ACaption, AJoinedTable, AJoinedFieldName, AVisField, AWidth);
+      Tables[i].AddNewField(AName, ACaption, AWidth, AVisible, AReferencedTable, AReferencedField,
+    AJoinedFieldName, AJoinedFieldCaption, AJoinedWidth, AJoinedVisible);
       Break;
     end;
 end;
 
 { TMyJoinedField }
 
-constructor TMyJoinedField.Create(AName, ACaption, AReferencedTable, AReferencedField,
-  AVisField: String; AWidth: Integer);
+constructor TMyJoinedField.Create(AName, ACaption: String; AWidth: Integer;
+  AVisible: Boolean; AReferencedTable, AReferencedField, AJoinedFieldName,
+  AJoinedFieldCaption: String; AJoinedWidth: Integer; AJoinedVisible: Boolean);
 begin
-  inherited Create(AName, ACaption, AWidth, True);
+  inherited Create(AName, ACaption, AWidth, AVisible);
   FReferencedTable := AReferencedTable;
   FReferencedField := AReferencedField;
-  FJoinedFieldName := AVisField;
+  FJoinedFieldName := AJoinedFieldName;
+  FJoinedFieldCaption := AJoinedFieldCaption;
+  FJoinedWidth := AJoinedWidth;
+  FJoinedVisible := AJoinedVisible;
 end;
 
 { TMyField }
@@ -142,16 +153,17 @@ var
 begin
   if (Fields[0] is TMyJoinedField) then
     Result := 'Select ' + (Fields[0] as TMyJoinedField).ReferencedTable
-    + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName + ' AS ' + Fields[0].Name
+    + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName //+ ' AS ' + Fields[0].Name
   else
     Result := 'Select ' + Name + '.' + Fields[0].Name;
 
   for i := 1 to GetFieldsLength - 1 do
+  begin
     if (Fields[i] is TMyJoinedField) then
       Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
-        + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName + ' AS ' + Fields[i].Name
-    else
+        + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName;
       Result += ', ' + Name + '.' + Fields[i].Name;
+  end;
 
   Result += ' FROM ' + Name;
 
@@ -171,11 +183,13 @@ begin
   FFields[High(FFields)] := TMyField.Create(AName, ACaption, AWidth, AVisible);
 end;
 
-procedure TMyTable.AddNewField(AName, ACaption, AJoinedTable, AJoinedFieldName,
-  AVisField: String; AWidth: Integer);
+procedure TMyTable.AddNewField(AName, ACaption: String; AWidth: Integer;
+  AVisible: Boolean; AReferencedTable, AReferencedField, AJoinedFieldName,
+  AJoinedFieldCaption: String; AJoinedWidth: Integer; AJoinedVisible: Boolean);
 begin
   SetLength(FFields, Length(FFields) + 1);
-  FFields[High(FFields)] := TMyJoinedField.Create(AName, ACaption, AJoinedTable, AJoinedFieldName, AVisField, AWidth);
+  FFields[High(FFields)] := TMyJoinedField.Create(AName, ACaption, AWidth, AVisible, AReferencedTable, AReferencedField,
+    AJoinedFieldName, AJoinedFieldCaption, AJoinedWidth, AJoinedVisible);
 end;
 
 function TMyTable.GetFieldsLength: Integer;
@@ -208,10 +222,10 @@ initialization
   begin
     AddNewField('StudentID', 'ИД', 35, True);
     AddNewField('StudentInitials', 'Ф.И.О. студента', 250, True);
-    RegisterTableField('Students', 'GroupID', 'Группа', 'Groups', 'GroupID', 'GroupNumber', 55);
+    AddNewField('GroupID', 'ИД группы', 75, True, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
   end;
 
-  with RegisterTable('Subjects', 'Предметы') do
+  {with RegisterTable('Subjects', 'Предметы') do
   begin
     AddNewField('SubjectID', 'ИД', 35, True);
     AddNewField('SubjectName', 'Название предмета', 250, True);
@@ -253,6 +267,6 @@ initialization
 
   RegisterTable('Group_Subjects', 'Предметы групп');
   RegisterTableField('Group_Subjects', 'GroupID', 'Группа', 'Groups', 'GroupID', 'GroupNumber', 55);
-  RegisterTableField('Group_Subjects', 'SubjectID', 'Предмет', 'Subjects', 'SubjectID', 'SubjectName', 190);
+  RegisterTableField('Group_Subjects', 'SubjectID', 'Предмет', 'Subjects', 'SubjectID', 'SubjectName', 190);}
 end.
 

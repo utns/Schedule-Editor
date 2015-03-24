@@ -1,5 +1,5 @@
 object FormListView: TFormListView
-  Left = 1229
+  Left = 1228
   Height = 525
   Top = 0
   Width = 527

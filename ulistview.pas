@@ -61,12 +61,23 @@ var
 begin
   for i := 0 to AForm.DBGrid.Columns.Count - 1 do
     for j := 0 to Tables[ACurTab].GetFieldsLength - 1 do
+    begin
       if AForm.DBGrid.Columns[i].Title.Caption = UpperCase(Tables[ACurTab].Fields[j].Name)  then
-      begin
-        AForm.DBGrid.Columns[i].Title.Caption := Tables[ACurTab].Fields[j].Caption;
-        AForm.DBGrid.Columns[i].Width := Tables[ACurTab].Fields[j].Width;
-        AForm.DBGrid.Columns[i].Visible := Tables[ACurTab].Fields[j].Visible;
-      end;
+        with Tables[ACurTab].Fields[j] do
+        begin
+          AForm.DBGrid.Columns[i].Title.Caption := Caption;
+          AForm.DBGrid.Columns[i].Width := Width;
+          AForm.DBGrid.Columns[i].Visible := Visible;
+        end;
+      if (Tables[ACurTab].Fields[j] is TMyJoinedField) and (AForm.DBGrid.Columns[i].Title.Caption =
+      UpperCase((Tables[ACurTab].Fields[j] as TMyJoinedField).JoinedFieldName))  then
+        with (Tables[ACurTab].Fields[j] as TMyJoinedField) do
+        begin
+          AForm.DBGrid.Columns[i].Title.Caption := JoinedFieldCaption;
+          AForm.DBGrid.Columns[i].Width := JoinedFieldWidth;
+          AForm.DBGrid.Columns[i].Visible := JoinedVisible;
+        end;
+    end;
 end;
 
 end.

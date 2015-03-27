@@ -23,7 +23,7 @@ begin
     else
       Result := 'Select ' + Name + '.' + Fields[0].Name;
 
-    for i := 1 to GetFieldsLength - 1 do
+    for i := 1 to FieldsCount - 1 do
     begin
       if (Fields[i] is TMyJoinedField) then
         Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
@@ -34,7 +34,7 @@ begin
 
     Result += ' FROM ' + Name;
 
-    for i := 0 to GetFieldsLength - 1 do
+    for i := 0 to FieldsCount - 1 do
       if Fields[i] is TMyJoinedField then
         Result += ' INNER JOIN ' + (Fields[i] as TMyJoinedField).ReferencedTable
           + ' ON ' + Name + '.' + Fields[i].Name

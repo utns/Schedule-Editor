@@ -1,7 +1,7 @@
 object FormAbout: TFormAbout
-  Left = 1467
+  Left = 1483
   Height = 100
-  Top = 562
+  Top = 301
   Width = 320
   Caption = 'О программе'
   ClientHeight = 100

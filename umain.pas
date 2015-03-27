@@ -44,7 +44,7 @@ begin
     if (Screen.Forms[i].Name = AName) then
     begin
       Result := True;
-      Screen.Forms[i].BringToFront;
+      Screen.Forms[i].ShowOnTop;
       Break;
     end;
 end;
@@ -86,8 +86,8 @@ end;
 
 procedure TMainForm.MenuItemExitClick(Sender: TObject);
 begin
-    if MessageDlg('Выйти из программы?', mtConfirmation, mbYesNo, 0) = mrYes then
-      MainForm.Close;
+  if MessageDlg('Выйти из программы?', mtConfirmation, mbYesNo, 0) = mrYes then
+    MainForm.Close;
 end;
 
 

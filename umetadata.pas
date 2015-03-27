@@ -32,7 +32,7 @@ type
     FJoinedWidth: Integer;
     FJoinedVisible: Boolean;
   public
-    Constructor Create(AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
+    constructor Create(AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
       AReferencedTable, AReferencedField, AJoinedFieldName, AJoinedFieldCaption: String;
       AJoinedWidth: Integer; AJoinedVisible: Boolean);
     property ReferencedTable: String read FReferencedTable;
@@ -51,13 +51,16 @@ type
     FFields: array of TMyField;
     function GetField(Index: Integer): TMyField;
   public
-    Constructor Create(AName, ACaption: String);
+    constructor Create(AName, ACaption: String);
     function CreateSqlQuery: String;
+    function SqlSelect: String;
+    function SqlInnerJoin: String;
+    function SqlOrderBy: String;
     procedure AddNewField(AName, ACaption: String; AWidth: Integer; AVisible: Boolean);
     procedure AddNewField(AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
       AReferencedTable, AReferencedField, AJoinedFieldName, AJoinedFieldCaption: String;
       AJoinedWidth: Integer; AJoinedVisible: Boolean);
-    function GetFieldsLength: Integer;
+    function FieldsCount: Integer;
     property Name: String read FName;
     property Caption: String read FCaption;
     property Fields[Index: Integer]: TMyField read GetField;
@@ -99,9 +102,9 @@ var
 begin
   for i := 0 to High(Tables) do
     if Tables[i].Name = ATableName then
-    begin                                   //плохо
+    begin
       Tables[i].AddNewField(AName, ACaption, AWidth, AVisible, AReferencedTable, AReferencedField,
-    AJoinedFieldName, AJoinedFieldCaption, AJoinedWidth, AJoinedVisible);
+        AJoinedFieldName, AJoinedFieldCaption, AJoinedWidth, AJoinedVisible);
       Break;
     end;
 end;
@@ -148,32 +151,51 @@ begin
 end;
 
 function TMyTable.CreateSqlQuery: String;
+begin
+  Result := SqlSelect;
+  Result += SqlInnerJoin;
+  Result += SqlOrderBy;
+end;
+
+function TMyTable.SqlSelect: String;
 var
   i: Integer;
 begin
   if (Fields[0] is TMyJoinedField) then
-    Result := 'Select ' + (Fields[0] as TMyJoinedField).ReferencedTable
-    + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName //+ ' AS ' + Fields[0].Name
+    Result := 'Select ' + Name + '.' + Fields[0].Name + ', ' + (Fields[0] as TMyJoinedField).ReferencedTable
+    + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName
   else
     Result := 'Select ' + Name + '.' + Fields[0].Name;
 
-  for i := 1 to GetFieldsLength - 1 do
+  for i := 1 to FieldsCount - 1 do
   begin
+    Result += ', ' + Name + '.' + Fields[i].Name;
     if (Fields[i] is TMyJoinedField) then
       Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
         + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName;
-      Result += ', ' + Name + '.' + Fields[i].Name;
   end;
-
   Result += ' FROM ' + Name;
+end;
 
-  for i := 0 to GetFieldsLength - 1 do
+function TMyTable.SqlInnerJoin: String;
+var
+  i: Integer;
+begin
+  for i := 0 to FieldsCount - 1 do
     if Fields[i] is TMyJoinedField then
       Result += ' INNER JOIN ' + (Fields[i] as TMyJoinedField).ReferencedTable
         + ' ON ' + Name + '.' + Fields[i].Name
         + ' = ' + (Fields[i] as TMyJoinedField).ReferencedTable + '.'
         + (Fields[i] as TMyJoinedField).ReferencedField;
-  Result += ' ORDER BY 1, 2';
+end;
+
+function TMyTable.SqlOrderBy: String;
+var
+  i: Integer;
+begin
+  Result := ' ORDER BY 1';
+  for i := 1 to FieldsCount - 1 do
+    Result += ', ' + IntToStr(i + 1);
 end;
 
 procedure TMyTable.AddNewField(AName, ACaption: String; AWidth: Integer;
@@ -192,7 +214,7 @@ begin
     AJoinedFieldName, AJoinedFieldCaption, AJoinedWidth, AJoinedVisible);
 end;
 
-function TMyTable.GetFieldsLength: Integer;
+function TMyTable.FieldsCount: Integer;
 begin
   Result := Length(FFields);
 end;
@@ -222,10 +244,10 @@ initialization
   begin
     AddNewField('StudentID', 'ИД', 35, True);
     AddNewField('StudentInitials', 'Ф.И.О. студента', 250, True);
-    AddNewField('GroupID', 'ИД группы', 75, True, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
+    AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
   end;
 
-  {with RegisterTable('Subjects', 'Предметы') do
+  with RegisterTable('Subjects', 'Предметы') do
   begin
     AddNewField('SubjectID', 'ИД', 35, True);
     AddNewField('SubjectName', 'Название предмета', 250, True);
@@ -251,22 +273,28 @@ initialization
     AddNewField('WeekDayName', 'Название', 90, True);
   end;
 
-  RegisterTable('Schedules', 'Расписание');
-  RegisterTableField('Schedules', 'GroupID', 'Группа', 'Groups', 'GroupID', 'GroupNumber', 55);
-  RegisterTableField('Schedules', 'WeekDayID', 'День недели', 'WeekDays', 'WeekDayID', 'WeekDayName', 90);
-  RegisterTableField('Schedules', 'PairID', '№ пары', 'Pairs', 'PairID', 'PairNumber', 55);
-  RegisterTableField('Schedules', 'SubjectID', 'Предмет', 'Subjects', 'SubjectID', 'SubjectName', 190);
-  RegisterTableField('Schedules', 'EducID', 'Форма занятия', 'EducActivities', 'EducID', 'EducName', 100);
-  RegisterTableField('Schedules', 'TeacherID', 'Преподаватель', 'Teachers', 'TeacherID', 'TeacherInitials', 250);
-  RegisterTableField('Schedules', 'AudienceID', 'Аудитория', 'Audiences', 'AudienceID', 'AudienceNumber', 70);
+  with RegisterTable('Schedules', 'Расписание') do
+  begin
+    AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
+    AddNewField('WeekDayID', 'ИД дня', 75, False, 'WeekDays', 'WeekDayID', 'WeekDayName', 'День недели', 90, True);
+    AddNewField('PairID', 'ИД пары', 75, False, 'Pairs', 'PairID', 'PairNumber', '№ пары', 55, True);
+    AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
+    AddNewField('EducID', 'ИД занятия', 75, False, 'EducActivities', 'EducID', 'EducName', 'Тип занатия', 100, True);
+    AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
+    AddNewField('AudienceID', ' ИД аудитории', 75, False, 'Audiences', 'AudienceID', 'AudienceNumber', 'Аудитория', 70, True);
+  end;
 
-  RegisterTable('Teachers_Subjects', 'Предметы преподавателя');
-  RegisterTableField('Teachers_Subjects', 'TeacherID', 'Преподаватель', 'Teachers', 'TeacherID'
-    ,'TeacherInitials', 250);
-  RegisterTableField('Teachers_Subjects', 'SubjectID', 'Предмет', 'Subjects', 'SubjectID', 'SubjectName', 240);
+  with RegisterTable('Teachers_Subjects', 'Предметы преподавателя') do
+  begin
+    AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
+    AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
+  end;
 
-  RegisterTable('Group_Subjects', 'Предметы групп');
-  RegisterTableField('Group_Subjects', 'GroupID', 'Группа', 'Groups', 'GroupID', 'GroupNumber', 55);
-  RegisterTableField('Group_Subjects', 'SubjectID', 'Предмет', 'Subjects', 'SubjectID', 'SubjectName', 190);}
+  with RegisterTable('Group_Subjects', 'Предметы групп') do
+  begin
+    AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
+    AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
+  end;
+
 end.
 

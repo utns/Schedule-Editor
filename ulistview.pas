@@ -60,7 +60,7 @@ var
   i, j: Integer;
 begin
   for i := 0 to AForm.DBGrid.Columns.Count - 1 do
-    for j := 0 to Tables[ACurTab].GetFieldsLength - 1 do
+    for j := 0 to Tables[ACurTab].FieldsCount - 1 do
     begin
       if AForm.DBGrid.Columns[i].Title.Caption = UpperCase(Tables[ACurTab].Fields[j].Name)  then
         with Tables[ACurTab].Fields[j] do

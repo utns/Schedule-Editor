@@ -1,13 +1,60 @@
 object FormListView: TFormListView
-  Left = 1387
-  Height = 525
-  Top = 4
-  Width = 527
+  Left = 1314
+  Height = 647
+  Top = 59
+  Width = 509
   Caption = 'FormListView'
-  ClientHeight = 525
-  ClientWidth = 527
+  ClientHeight = 647
+  ClientWidth = 509
   OnClose = FormClose
   LCLVersion = '1.2.4.0'
+  object Panel1: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 183
+    Top = 464
+    Width = 509
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ClientHeight = 183
+    ClientWidth = 509
+    TabOrder = 2
+    object CBTypeOfSort: TComboBox
+      Left = 120
+      Height = 25
+      Top = 40
+      Width = 112
+      ItemHeight = 0
+      ItemIndex = 0
+      Items.Strings = (
+        'Возрастание'
+        'Убывание'
+      )
+      Style = csDropDownList
+      TabOrder = 0
+      Text = 'Возрастание'
+    end
+    object CBOrderBy: TComboBox
+      Left = 8
+      Height = 27
+      Top = 40
+      Width = 100
+      ItemHeight = 0
+      TabOrder = 1
+    end
+    object Button1: TButton
+      Left = 264
+      Height = 25
+      Top = 40
+      Width = 75
+      Caption = 'Button1'
+      OnClick = Button1Click
+      TabOrder = 2
+    end
+  end
   object DBNavigator: TDBNavigator
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = DBGrid
@@ -16,11 +63,11 @@ object FormListView: TFormListView
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = 0
-    Height = 30
-    Top = 495
-    Width = 527
-    Anchors = [akLeft, akRight, akBottom]
+    Left = 8
+    Height = 24
+    Top = 472
+    Width = 188
+    Anchors = []
     BevelOuter = bvNone
     ChildSizing.EnlargeHorizontal = crsScaleChilds
     ChildSizing.EnlargeVertical = crsScaleChilds
@@ -28,8 +75,8 @@ object FormListView: TFormListView
     ChildSizing.ShrinkVertical = crsScaleChilds
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 100
-    ClientHeight = 30
-    ClientWidth = 527
+    ClientHeight = 24
+    ClientWidth = 188
     DataSource = DataSource
     Options = []
     TabOrder = 0
@@ -43,10 +90,10 @@ object FormListView: TFormListView
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 495
+    Height = 424
     Top = 0
-    Width = 527
-    Anchors = [akTop, akLeft, akRight, akBottom]
+    Width = 509
+    Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Bottom = 30
     Color = clWindow
     Columns = <>

@@ -52,10 +52,10 @@ type
     function GetField(Index: Integer): TMyField;
   public
     constructor Create(AName, ACaption: String);
-    function CreateSqlQuery: String;
+    function CreateSqlQuery(ASortColumn, ATypeSort: Integer): String;
     function SqlSelect: String;
     function SqlInnerJoin: String;
-    function SqlOrderBy: String;
+    function SqlOrderBy(ASortColumn, ATypeSort: Integer): String;
     procedure AddNewField(AName, ACaption: String; AWidth: Integer; AVisible: Boolean);
     procedure AddNewField(AName, ACaption: String; AWidth: Integer; AVisible: Boolean;
       AReferencedTable, AReferencedField, AJoinedFieldName, AJoinedFieldCaption: String;
@@ -150,11 +150,11 @@ begin
   FCaption := ACaption;
 end;
 
-function TMyTable.CreateSqlQuery: String;
+function TMyTable.CreateSqlQuery(ASortColumn, ATypeSort: Integer): String;
 begin
   Result := SqlSelect;
   Result += SqlInnerJoin;
-  Result += SqlOrderBy;
+  Result += SqlOrderBy(ASortColumn, ATypeSort);
 end;
 
 function TMyTable.SqlSelect: String;
@@ -189,13 +189,18 @@ begin
         + (Fields[i] as TMyJoinedField).ReferencedField;
 end;
 
-function TMyTable.SqlOrderBy: String;
+function TMyTable.SqlOrderBy(ASortColumn, ATypeSort: Integer): String;
 var
   i: Integer;
 begin
-  Result := ' ORDER BY 1';
-  for i := 1 to FieldsCount - 1 do
-    Result += ', ' + IntToStr(i + 1);
+  if (Fields[ASortColumn] is TMyJoinedField) then
+    Result := ' ORDER BY ' + (Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
+  else
+    Result := ' ORDER BY ' + Fields[ASortColumn].Name;
+  if ATypeSort = 1 then
+    Result += ' DESC';
+  //for i := 1 to FieldsCount - 1 do
+    //Result += ', ' + IntToStr(i + 1);
 end;
 
 procedure TMyTable.AddNewField(AName, ACaption: String; AWidth: Integer;
@@ -281,7 +286,7 @@ initialization
     AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
     AddNewField('EducID', 'ИД занятия', 75, False, 'EducActivities', 'EducID', 'EducName', 'Тип занатия', 100, True);
     AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
-    AddNewField('AudienceID', ' ИД аудитории', 75, False, 'Audiences', 'AudienceID', 'AudienceNumber', 'Аудитория', 70, True);
+    AddNewField('AudienceID', 'ИД аудитории', 75, False, 'Audiences', 'AudienceID', 'AudienceNumber', 'Аудитория', 70, True);
   end;
 
   with RegisterTable('Teachers_Subjects', 'Предметы преподавателя') do

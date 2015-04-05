@@ -1,10 +1,10 @@
 object FormListView: TFormListView
-  Left = 1314
-  Height = 647
-  Top = 59
+  Left = 1343
+  Height = 848
+  Top = 105
   Width = 509
   Caption = 'FormListView'
-  ClientHeight = 647
+  ClientHeight = 848
   ClientWidth = 509
   OnClose = FormClose
   LCLVersion = '1.2.4.0'
@@ -15,11 +15,11 @@ object FormListView: TFormListView
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 183
-    Top = 464
+    Height = 432
+    Top = 416
     Width = 509
     Anchors = [akTop, akLeft, akRight, akBottom]
-    ClientHeight = 183
+    ClientHeight = 432
     ClientWidth = 509
     TabOrder = 2
     object CBTypeOfSort: TComboBox
@@ -45,14 +45,44 @@ object FormListView: TFormListView
       ItemHeight = 0
       TabOrder = 1
     end
-    object Button1: TButton
-      Left = 264
-      Height = 25
-      Top = 40
-      Width = 75
-      Caption = 'Button1'
-      OnClick = Button1Click
+    object ScrollBox1: TScrollBox
+      Tag = -17
+      Left = 16
+      Height = 240
+      Top = 80
+      Width = 408
+      HorzScrollBar.Page = 395
+      VertScrollBar.Page = 121
+      ClientHeight = 238
+      ClientWidth = 406
       TabOrder = 2
+      object ButtonAddFilter: TButton
+        Left = 344
+        Height = 25
+        Top = 96
+        Width = 51
+        Caption = '+'
+        OnClick = ButtonAddFilterClick
+        TabOrder = 0
+      end
+      object ButtonDeleteFilter: TButton
+        Left = 288
+        Height = 25
+        Top = -12
+        Width = 51
+        Caption = '-'
+        OnClick = ButtonDeleteFilterClick
+        TabOrder = 1
+        Visible = False
+      end
+    end
+    object SpeedButton1: TSpeedButton
+      Left = 360
+      Height = 25
+      Top = 42
+      Width = 47
+      Caption = 'OK'
+      OnClick = SpeedButton1Click
     end
   end
   object DBNavigator: TDBNavigator
@@ -65,7 +95,7 @@ object FormListView: TFormListView
     AnchorSideBottom.Side = asrBottom
     Left = 8
     Height = 24
-    Top = 472
+    Top = 623
     Width = 188
     Anchors = []
     BevelOuter = bvNone
@@ -93,7 +123,7 @@ object FormListView: TFormListView
     Height = 424
     Top = 0
     Width = 509
-    Anchors = [akTop, akLeft, akRight]
+    Anchors = [akTop, akRight]
     BorderSpacing.Bottom = 30
     Color = clWindow
     Columns = <>

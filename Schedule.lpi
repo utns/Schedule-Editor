@@ -39,7 +39,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="8">
       <Unit0>
         <Filename Value="Schedule.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -87,6 +87,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="USQLQueries"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="ufilters.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UFilters"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -52,7 +52,7 @@ type
     function GetField(Index: Integer): TMyField;
   public
     constructor Create(AName, ACaption: String);
-    function CreateSqlQuery(ASortColumn, ATypeSort: Integer): String;
+    function CreateSqlQuery(ASortColumn, ATypeSort: Integer; AWhere: String): String;
     function SqlSelect: String;
     function SqlInnerJoin: String;
     function SqlOrderBy(ASortColumn, ATypeSort: Integer): String;
@@ -150,10 +150,12 @@ begin
   FCaption := ACaption;
 end;
 
-function TMyTable.CreateSqlQuery(ASortColumn, ATypeSort: Integer): String;
+function TMyTable.CreateSqlQuery(ASortColumn, ATypeSort: Integer; AWhere: String
+  ): String;
 begin
   Result := SqlSelect;
   Result += SqlInnerJoin;
+  Result += AWhere;
   Result += SqlOrderBy(ASortColumn, ATypeSort);
 end;
 
@@ -193,14 +195,15 @@ function TMyTable.SqlOrderBy(ASortColumn, ATypeSort: Integer): String;
 var
   i: Integer;
 begin
-  if (Fields[ASortColumn] is TMyJoinedField) then
-    Result := ' ORDER BY ' + (Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
-  else
-    Result := ' ORDER BY ' + Fields[ASortColumn].Name;
-  if ATypeSort = 1 then
-    Result += ' DESC';
-  //for i := 1 to FieldsCount - 1 do
-    //Result += ', ' + IntToStr(i + 1);
+  if ASortColumn >= 0 then
+  begin
+    if (Fields[ASortColumn] is TMyJoinedField) then
+      Result := ' ORDER BY ' + (Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
+    else
+      Result := ' ORDER BY ' + Fields[ASortColumn].Name;
+    if ATypeSort = 1 then
+      Result += ' DESC';
+  end;
 end;
 
 procedure TMyTable.AddNewField(AName, ACaption: String; AWidth: Integer;

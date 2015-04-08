@@ -164,18 +164,28 @@ var
   i: Integer;
 begin
   if (Fields[0] is TMyJoinedField) then
-    Result := 'Select ' + Name + '.' + Fields[0].Name + ', ' + (Fields[0] as TMyJoinedField).ReferencedTable
+    Result := 'Select ' + (Fields[0] as TMyJoinedField).ReferencedTable
     + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName
   else
     Result := 'Select ' + Name + '.' + Fields[0].Name;
 
   for i := 1 to FieldsCount - 1 do
   begin
+
+    if (Fields[i] is TMyJoinedField) then
+      Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
+        + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName
+    else
+      Result += ', ' + Name + '.' + Fields[i].Name;
+  end;
+
+ { for i := 1 to FieldsCount - 1 do
+  begin
     Result += ', ' + Name + '.' + Fields[i].Name;
     if (Fields[i] is TMyJoinedField) then
       Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
         + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName;
-  end;
+  end;}
   Result += ' FROM ' + Name;
 end;
 
@@ -195,13 +205,13 @@ function TMyTable.SqlOrderBy(ASortColumn, ATypeSort: Integer): String;
 var
   i: Integer;
 begin
-  if ASortColumn >= 0 then
+  if (ASortColumn >= 0) and (ATypeSort > 0) then
   begin
     if (Fields[ASortColumn] is TMyJoinedField) then
       Result := ' ORDER BY ' + (Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
     else
       Result := ' ORDER BY ' + Fields[ASortColumn].Name;
-    if ATypeSort = 1 then
+    if ATypeSort = 2 then
       Result += ' DESC';
   end;
 end;
@@ -305,4 +315,4 @@ initialization
   end;
 
 end.
-
+

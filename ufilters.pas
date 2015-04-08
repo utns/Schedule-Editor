@@ -68,6 +68,7 @@ begin
     Visible := True;
     Width := 80;
     Left := 10;
+    Height := 23;
     AWinControl.Tag := AWinControl.Tag + Height + 5;
     Top := AWinControl.Tag;
     Parent := AWinControl;
@@ -101,6 +102,7 @@ begin
   begin
     Width := 80;
     Left := 110;
+    Height := 23;
     Top := AWinControl.Tag;
     Parent := AWinControl;
     Items.Add('<');
@@ -131,7 +133,7 @@ begin
   with EditFilterValue do
   begin
     Width := 80;
-    Height := 27;
+    Height := 23;
     Left := 200;
     Top := AWinControl.Tag;
     Parent := AWinControl;

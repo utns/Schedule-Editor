@@ -5,7 +5,7 @@ unit UDBConnection;
 interface
 
 uses
-  Classes, SysUtils, IBConnection, sqldb, FileUtil;
+  Classes, SysUtils, IBConnection, sqldb, FileUtil, Controls;
 
 type
 
@@ -13,6 +13,7 @@ type
 
   TDataModuleMain = class(TDataModule)
     IBConnection: TIBConnection;
+    ImageList1: TImageList;
     SQLTransaction: TSQLTransaction;
   private
     { private declarations }

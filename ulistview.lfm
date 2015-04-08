@@ -1,161 +1,175 @@
 object FormListView: TFormListView
-  Left = 1343
-  Height = 848
-  Top = 105
-  Width = 509
+  Left = 1162
+  Height = 621
+  Top = 40
+  Width = 557
   Caption = 'FormListView'
-  ClientHeight = 848
-  ClientWidth = 509
+  ClientHeight = 621
+  ClientWidth = 557
   OnClose = FormClose
   LCLVersion = '1.2.4.0'
-  object Panel1: TPanel
-    AnchorSideLeft.Control = Owner
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
+  object PairSplitter1: TPairSplitter
+    Cursor = crVSplit
     Left = 0
-    Height = 432
-    Top = 416
-    Width = 509
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    ClientHeight = 432
-    ClientWidth = 509
-    TabOrder = 2
-    object CBTypeOfSort: TComboBox
-      Left = 120
-      Height = 25
-      Top = 40
-      Width = 112
-      ItemHeight = 0
-      ItemIndex = 0
-      Items.Strings = (
-        'Возрастание'
-        'Убывание'
-      )
-      Style = csDropDownList
-      TabOrder = 0
-      Text = 'Возрастание'
-    end
-    object CBOrderBy: TComboBox
-      Left = 8
-      Height = 27
-      Top = 40
-      Width = 100
-      ItemHeight = 0
-      TabOrder = 1
-    end
-    object ScrollBox1: TScrollBox
-      Tag = -17
-      Left = 16
-      Height = 240
-      Top = 80
-      Width = 408
-      HorzScrollBar.Page = 395
-      VertScrollBar.Page = 121
-      ClientHeight = 238
-      ClientWidth = 406
-      TabOrder = 2
-      object ButtonAddFilter: TButton
-        Left = 344
-        Height = 25
-        Top = 96
-        Width = 51
-        Caption = '+'
-        OnClick = ButtonAddFilterClick
-        TabOrder = 0
-      end
-      object ButtonDeleteFilter: TButton
-        Left = 288
-        Height = 25
-        Top = -12
-        Width = 51
-        Caption = '-'
-        OnClick = ButtonDeleteFilterClick
-        TabOrder = 1
-        Visible = False
-      end
-    end
-    object SpeedButton1: TSpeedButton
-      Left = 360
-      Height = 25
-      Top = 42
-      Width = 47
-      Caption = 'OK'
-      OnClick = SpeedButton1Click
-    end
-  end
-  object DBNavigator: TDBNavigator
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = DBGrid
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
-    Left = 8
-    Height = 24
-    Top = 623
-    Width = 188
-    Anchors = []
-    BevelOuter = bvNone
-    ChildSizing.EnlargeHorizontal = crsScaleChilds
-    ChildSizing.EnlargeVertical = crsScaleChilds
-    ChildSizing.ShrinkHorizontal = crsScaleChilds
-    ChildSizing.ShrinkVertical = crsScaleChilds
-    ChildSizing.Layout = cclLeftToRightThenTopToBottom
-    ChildSizing.ControlsPerLine = 100
-    ClientHeight = 24
-    ClientWidth = 188
-    DataSource = DataSource
-    Options = []
-    TabOrder = 0
-    VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast]
-  end
-  object DBGrid: TDBGrid
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Owner
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
-    Left = 0
-    Height = 424
+    Height = 621
     Top = 0
-    Width = 509
-    Anchors = [akTop, akRight]
-    BorderSpacing.Bottom = 30
-    Color = clWindow
-    Columns = <>
-    DataSource = DataSource
-    TabOrder = 1
+    Width = 557
+    Align = alClient
+    Anchors = []
+    Position = 350
+    SplitterType = pstVertical
+    object PairSplitterSide1: TPairSplitterSide
+      Cursor = crArrow
+      Left = 0
+      Height = 350
+      Top = 0
+      Width = 557
+      ClientWidth = 557
+      ClientHeight = 350
+      object DBGrid: TDBGrid
+        AnchorSideLeft.Control = PairSplitterSide1
+        AnchorSideTop.Control = PairSplitterSide1
+        AnchorSideRight.Control = PairSplitterSide1
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = PairSplitterSide1
+        AnchorSideBottom.Side = asrBottom
+        Left = 0
+        Height = 345
+        Top = 0
+        Width = 557
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Bottom = 5
+        Color = clWindow
+        Columns = <>
+        DataSource = DataSource
+        TabOrder = 0
+        TitleImageList = DataModuleMain.ImageList1
+        OnTitleClick = DBGridTitleClick
+      end
+    end
+    object PairSplitterSide2: TPairSplitterSide
+      Cursor = crArrow
+      Left = 0
+      Height = 266
+      Top = 355
+      Width = 557
+      ClientWidth = 557
+      ClientHeight = 266
+      object DBNavigator: TDBNavigator
+        AnchorSideLeft.Control = PairSplitterSide2
+        AnchorSideTop.Control = PairSplitterSide2
+        AnchorSideRight.Control = Owner
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = Owner
+        AnchorSideBottom.Side = asrBottom
+        Left = 5
+        Height = 24
+        Top = 5
+        Width = 188
+        BevelOuter = bvNone
+        BorderSpacing.Left = 5
+        BorderSpacing.Top = 5
+        ChildSizing.EnlargeHorizontal = crsScaleChilds
+        ChildSizing.EnlargeVertical = crsScaleChilds
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 100
+        ClientHeight = 24
+        ClientWidth = 188
+        DataSource = DataSource
+        Options = []
+        TabOrder = 0
+        VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast]
+      end
+      object CBTypeOfSort: TComboBox
+        AnchorSideLeft.Control = CBOrderBy
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = DBNavigator
+        AnchorSideTop.Side = asrBottom
+        Left = 115
+        Height = 23
+        Top = 34
+        Width = 112
+        BorderSpacing.Left = 10
+        BorderSpacing.Top = 5
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Возрастание'
+          'Убывание'
+        )
+        Style = csDropDownList
+        TabOrder = 1
+        Text = 'Возрастание'
+      end
+      object CBOrderBy: TComboBox
+        AnchorSideLeft.Control = PairSplitterSide2
+        AnchorSideTop.Control = DBNavigator
+        AnchorSideTop.Side = asrBottom
+        Left = 5
+        Height = 23
+        Top = 34
+        Width = 100
+        BorderSpacing.Left = 5
+        BorderSpacing.Top = 5
+        ItemHeight = 15
+        TabOrder = 2
+      end
+      object SpeedButton1: TSpeedButton
+        Left = 304
+        Height = 25
+        Top = 34
+        Width = 47
+        Caption = 'OK'
+        OnClick = SpeedButton1Click
+      end
+      object ScrollBox1: TScrollBox
+        Tag = -17
+        AnchorSideLeft.Control = PairSplitterSide2
+        AnchorSideTop.Control = CBTypeOfSort
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = PairSplitterSide2
+        AnchorSideBottom.Control = PairSplitterSide2
+        AnchorSideBottom.Side = asrBottom
+        Left = 5
+        Height = 199
+        Top = 62
+        Width = 408
+        HorzScrollBar.Page = 403
+        VertScrollBar.Page = 73
+        Align = alCustom
+        Anchors = [akTop, akLeft, akBottom]
+        BorderSpacing.Left = 5
+        BorderSpacing.Top = 5
+        BorderSpacing.Bottom = 5
+        ClientHeight = 195
+        ClientWidth = 404
+        TabOrder = 3
+        object ButtonAddFilter: TButton
+          Left = 352
+          Height = 25
+          Top = 48
+          Width = 51
+          Caption = '+'
+          OnClick = ButtonAddFilterClick
+          TabOrder = 0
+        end
+        object ButtonDeleteFilter: TButton
+          Left = 296
+          Height = 25
+          Top = 48
+          Width = 51
+          Caption = '-'
+          OnClick = ButtonDeleteFilterClick
+          TabOrder = 1
+          Visible = False
+        end
+      end
+    end
   end
   object SQLQuery: TSQLQuery
-    FieldDefs = <    
-      item
-        Name = 'ID'
-        DataType = ftInteger
-        Precision = -1
-        Size = 0
-      end    
-      item
-        Name = 'NAME'
-        DataType = ftString
-        Precision = -1
-        Size = 60
-      end    
-      item
-        Name = 'AGE'
-        DataType = ftSmallint
-        Precision = -1
-        Size = 0
-      end    
-      item
-        Name = 'GROUPID'
-        DataType = ftInteger
-        Precision = -1
-        Size = 0
-      end>
+    FieldDefs = <>
     Database = DataModuleMain.IBConnection
     Transaction = DataModuleMain.SQLTransaction
     SQL.Strings = (
@@ -170,4 +184,4 @@ object FormListView: TFormListView
     left = 280
     top = 80
   end
-end
+end

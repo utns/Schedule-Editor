@@ -22,6 +22,7 @@ type
     function GetColumn: Integer; virtual;
     function GetFilterType: String; virtual;
     function GetFilterValue: String; virtual;
+    function GetFilterAndOr: String; virtual;
   end;
 
   { TCBColumnName }
@@ -46,6 +47,17 @@ type
     function GetFilterType: String; override;
   end;
 
+  { TCBAndOr }
+
+  TCBAndOr =class(TMainFilter)
+  private
+    FComboBoxAndOr: TComboBox;
+  public
+    constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
+    constructor Free; override;
+    function GetFilterAndOr: String; override;
+  end;
+
   { TEFilterValue }
 
   TEFilterValue =class(TMainFilter)
@@ -59,6 +71,42 @@ type
 
 implementation
 
+{ TCBAndOr }
+
+constructor TCBAndOr.Create(AWinControl: TWinControl; ACurTable: Integer;
+  ASpeedButton: TSpeedButton);
+begin
+  Inherited Create(ASpeedButton);
+  FComboBoxAndOr := TComboBox.Create(AWinControl);
+  with FComboBoxAndOr do
+  begin
+    Width := 50;
+    Left := 10;
+    Height := 23;
+    AWinControl.Tag := AWinControl.Tag + Height + 5;
+    Top := AWinControl.Tag;
+    Parent := AWinControl;
+    ReadOnly := True;
+    Items.Add('И');
+    Items.Add('Или');
+    ItemIndex := 0;
+    OnChange := @Change;
+  end;
+end;
+
+constructor TCBAndOr.Free;
+begin
+  FComboBoxAndOr.Free;
+end;
+
+function TCBAndOr.GetFilterAndOr: String;
+begin
+  if FComboBoxAndOr.ItemIndex = 0 then
+    Result := 'AND'
+  else
+    Result := 'OR';
+end;
+
 { TCBColumnName }
 
 constructor TCBColumnName.Create(AWinControl: TWinControl; ACurTable: Integer;
@@ -71,10 +119,9 @@ begin
   with FComboBoxColumnName do
   begin
     Visible := True;
-    Width := 80;
-    Left := 10;
+    Width := 90;
+    Left := 65;
     Height := 23;
-    AWinControl.Tag := AWinControl.Tag + Height + 5;
     Top := AWinControl.Tag;
     Parent := AWinControl;
     ReadOnly := True;
@@ -102,15 +149,13 @@ end;
 
 constructor TCBFilterType.Create(AWinControl: TWinControl; ACurTable: Integer;
   ASpeedButton: TSpeedButton);
-var
-  i: Integer;
 begin
   Inherited Create(ASpeedButton);
   FComboBoxFilterType := TComboBox.Create(AWinControl);
   with FComboBoxFilterType do
   begin
     Width := 80;
-    Left := 110;
+    Left := 160;
     Height := 23;
     Top := AWinControl.Tag;
     Parent := AWinControl;
@@ -148,9 +193,9 @@ begin
   FEditFilterValue := TEdit.Create(AWinControl);
   with FEditFilterValue do
   begin
-    Width := 80;
+    Width := 150;
     Height := 23;
-    Left := 200;
+    Left := 245;
     Top := AWinControl.Tag;
     Parent := AWinControl;
     OnChange := @Change;
@@ -196,6 +241,11 @@ begin
 end;
 
 function TMainFilter.GetFilterValue: String;
+begin
+
+end;
+
+function TMainFilter.GetFilterAndOr: String;
 begin
 
 end;

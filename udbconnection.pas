@@ -13,7 +13,7 @@ type
 
   TDataModuleMain = class(TDataModule)
     IBConnection: TIBConnection;
-    ImageList1: TImageList;
+    ImageList: TImageList;
     SQLTransaction: TSQLTransaction;
   private
     { private declarations }

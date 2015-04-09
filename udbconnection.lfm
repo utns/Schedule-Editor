@@ -24,10 +24,10 @@ object DataModuleMain: TDataModuleMain
     left = 40
     top = 72
   end
-  object ImageList1: TImageList
+  object ImageList: TImageList
     ImageType = itMask
-    left = 152
-    top = 24
+    left = 128
+    top = 8
     Bitmap = {
       4C69020000001000000010000000FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF

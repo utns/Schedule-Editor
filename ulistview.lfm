@@ -1,17 +1,17 @@
 object FormListView: TFormListView
   Left = 1162
-  Height = 621
+  Height = 818
   Top = 40
   Width = 557
   Caption = 'FormListView'
-  ClientHeight = 621
+  ClientHeight = 818
   ClientWidth = 557
   OnClose = FormClose
   LCLVersion = '1.2.4.0'
-  object PairSplitter1: TPairSplitter
+  object PairSplitter: TPairSplitter
     Cursor = crVSplit
     Left = 0
-    Height = 621
+    Height = 818
     Top = 0
     Width = 557
     Align = alClient
@@ -50,11 +50,11 @@ object FormListView: TFormListView
     object PairSplitterSide2: TPairSplitterSide
       Cursor = crArrow
       Left = 0
-      Height = 266
+      Height = 463
       Top = 355
       Width = 557
       ClientWidth = 557
-      ClientHeight = 266
+      ClientHeight = 463
       object DBNavigator: TDBNavigator
         AnchorSideLeft.Control = PairSplitterSide2
         AnchorSideTop.Control = PairSplitterSide2
@@ -116,35 +116,39 @@ object FormListView: TFormListView
         ItemHeight = 15
         TabOrder = 2
       end
-      object SpeedButton1: TSpeedButton
+      object SpeedButtonOK: TSpeedButton
         Left = 304
         Height = 25
         Top = 34
         Width = 47
+        AllowAllUp = True
         Caption = 'OK'
-        OnClick = SpeedButton1Click
+        GroupIndex = 1
+        OnClick = SpeedButtonOKClick
       end
-      object ScrollBox1: TScrollBox
+      object ScrollBox: TScrollBox
         Tag = -17
         AnchorSideLeft.Control = PairSplitterSide2
         AnchorSideTop.Control = CBTypeOfSort
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = PairSplitterSide2
+        AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = PairSplitterSide2
         AnchorSideBottom.Side = asrBottom
         Left = 5
-        Height = 199
+        Height = 396
         Top = 62
-        Width = 408
-        HorzScrollBar.Page = 403
-        VertScrollBar.Page = 73
+        Width = 547
+        HorzScrollBar.Page = 425
+        VertScrollBar.Page = 178
         Align = alCustom
-        Anchors = [akTop, akLeft, akBottom]
+        Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Left = 5
         BorderSpacing.Top = 5
+        BorderSpacing.Right = 5
         BorderSpacing.Bottom = 5
-        ClientHeight = 195
-        ClientWidth = 404
+        ClientHeight = 392
+        ClientWidth = 543
         TabOrder = 3
         object ButtonAddFilter: TButton
           Left = 352
@@ -164,6 +168,23 @@ object FormListView: TFormListView
           OnClick = ButtonDeleteFilterClick
           TabOrder = 1
           Visible = False
+        end
+        object ComboBox1: TComboBox
+          Left = 224
+          Height = 23
+          Top = 155
+          Width = 100
+          ItemHeight = 15
+          TabOrder = 2
+          Text = 'ComboBox1'
+        end
+        object Edit1: TEdit
+          Left = 345
+          Height = 23
+          Top = 155
+          Width = 80
+          TabOrder = 3
+          Text = 'Edit1'
         end
       end
     end

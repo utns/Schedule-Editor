@@ -19,6 +19,7 @@ object DataModuleMain: TDataModuleMain
   end
   object SQLTransaction: TSQLTransaction
     Active = False
+    Action = caNone
     Database = IBConnection
     left = 40
     top = 72

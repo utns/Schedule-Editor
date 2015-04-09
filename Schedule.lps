@@ -4,15 +4,17 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="25">
+    <Units Count="28">
       <Unit0>
         <Filename Value="Schedule.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Schedule"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="83" Y="10"/>
-        <UsageCount Value="101"/>
+        <CursorPos X="1" Y="22"/>
+        <UsageCount Value="110"/>
+        <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="umain.pas"/>
@@ -24,8 +26,8 @@
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
         <TopLine Value="48"/>
-        <CursorPos X="1" Y="84"/>
-        <UsageCount Value="101"/>
+        <CursorPos X="35" Y="76"/>
+        <UsageCount Value="110"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -40,7 +42,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="37" Y="17"/>
-        <UsageCount Value="101"/>
+        <UsageCount Value="110"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit2>
@@ -50,9 +52,9 @@
         <UnitName Value="UMetadata"/>
         <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="153"/>
-        <CursorPos X="27" Y="167"/>
-        <UsageCount Value="101"/>
+        <TopLine Value="1"/>
+        <CursorPos X="6" Y="181"/>
+        <UsageCount Value="110"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
@@ -62,12 +64,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UListView"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="104"/>
-        <CursorPos X="27" Y="102"/>
-        <UsageCount Value="101"/>
+        <TopLine Value="194"/>
+        <CursorPos X="60" Y="236"/>
+        <UsageCount Value="110"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit4>
@@ -81,7 +82,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="43" Y="25"/>
-        <UsageCount Value="88"/>
+        <UsageCount Value="97"/>
       </Unit5>
       <Unit6>
         <Filename Value="usqlqueries.pas"/>
@@ -91,18 +92,19 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="23" Y="14"/>
-        <UsageCount Value="76"/>
+        <UsageCount Value="85"/>
         <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="ufilters.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UFilters"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="85"/>
-        <CursorPos X="50" Y="112"/>
-        <UsageCount Value="47"/>
+        <TopLine Value="66"/>
+        <CursorPos X="21" Y="80"/>
+        <UsageCount Value="56"/>
         <Loaded Value="True"/>
       </Unit7>
       <Unit8>
@@ -230,122 +232,159 @@
       <Unit24>
         <Filename Value="D:\lazarus\lcl\dbgrids.pas"/>
         <UnitName Value="DBGrids"/>
-        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1954"/>
         <CursorPos X="1" Y="1978"/>
-        <UsageCount Value="12"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="13"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="D:\lazarus\lcl\include\control.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="2732"/>
+        <CursorPos X="1" Y="2711"/>
+        <UsageCount Value="11"/>
+      </Unit25>
+      <Unit26>
+        <Filename Value="C:\Langs\lazarus\lcl\stdctrls.pp"/>
+        <UnitName Value="StdCtrls"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="699"/>
+        <CursorPos X="15" Y="722"/>
+        <UsageCount Value="10"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="D:\lazarus\lcl\buttons.pp"/>
+        <UnitName Value="Buttons"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="330"/>
+        <CursorPos X="3" Y="354"/>
+        <UsageCount Value="11"/>
+      </Unit27>
     </Units>
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
     </General>
-    <JumpHistory Count="26" HistoryIndex="25">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="93" Column="1" TopLine="68"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="151" Column="40" TopLine="113"/>
       </Position1>
       <Position2>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="94" Column="1" TopLine="68"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="161" Column="74" TopLine="129"/>
       </Position2>
       <Position3>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="138" Column="81" TopLine="113"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="17" Column="39" TopLine="1"/>
       </Position3>
       <Position4>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="67" Column="5" TopLine="50"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="52" Column="29" TopLine="122"/>
       </Position4>
       <Position5>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="128" Column="7" TopLine="97"/>
+        <Caret Line="113" Column="61" TopLine="65"/>
       </Position5>
       <Position6>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="90" Column="38" TopLine="66"/>
+        <Caret Line="192" Column="7" TopLine="171"/>
       </Position6>
       <Position7>
-        <Filename Value="umetadata.pas"/>
-        <Caret Line="198" Column="17" TopLine="174"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="19" Column="26" TopLine="11"/>
       </Position7>
       <Position8>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="91" Column="65" TopLine="57"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="53" Column="16" TopLine="34"/>
       </Position8>
       <Position9>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="69" Column="59" TopLine="45"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="31" Column="19" TopLine="10"/>
       </Position9>
       <Position10>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="88" Column="14" TopLine="64"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="42" Column="12" TopLine="7"/>
       </Position10>
       <Position11>
-        <Filename Value="umetadata.pas"/>
-        <Caret Line="198" Column="38" TopLine="167"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="53" Column="22" TopLine="29"/>
       </Position11>
       <Position12>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="95" Column="11" TopLine="68"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="69" Column="34" TopLine="58"/>
       </Position12>
       <Position13>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="89" Column="26" TopLine="65"/>
+        <Caret Line="197" Column="70" TopLine="4"/>
       </Position13>
       <Position14>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="86" Column="1" TopLine="65"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="20" Column="50" TopLine="1"/>
       </Position14>
       <Position15>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="87" Column="1" TopLine="65"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="173" Column="35" TopLine="155"/>
       </Position15>
       <Position16>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="88" Column="1" TopLine="65"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="69" Column="32" TopLine="45"/>
       </Position16>
       <Position17>
-        <Filename Value="ulistview.pas"/>
-        <Caret Line="89" Column="1" TopLine="65"/>
+        <Filename Value="ufilters.pas"/>
+        <Caret Line="107" Column="32" TopLine="83"/>
       </Position17>
       <Position18>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="90" Column="1" TopLine="65"/>
+        <Caret Line="197" Column="70" TopLine="4"/>
       </Position18>
       <Position19>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="91" Column="1" TopLine="65"/>
+        <Caret Line="209" Column="58" TopLine="201"/>
       </Position19>
       <Position20>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="92" Column="1" TopLine="65"/>
+        <Caret Line="33" Column="56" TopLine="23"/>
       </Position20>
       <Position21>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="93" Column="1" TopLine="65"/>
+        <Caret Line="41" Column="37" TopLine="18"/>
       </Position21>
       <Position22>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="94" Column="1" TopLine="65"/>
+        <Caret Line="259" Column="15" TopLine="217"/>
       </Position22>
       <Position23>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="95" Column="1" TopLine="71"/>
+        <Caret Line="83" Column="59" TopLine="61"/>
       </Position23>
       <Position24>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="96" Column="7" TopLine="70"/>
+        <Caret Line="42" Column="23" TopLine="19"/>
       </Position24>
       <Position25>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="95" Column="1" TopLine="70"/>
+        <Caret Line="203" Column="9" TopLine="185"/>
       </Position25>
       <Position26>
         <Filename Value="ulistview.pas"/>
-        <Caret Line="95" Column="7" TopLine="70"/>
+        <Caret Line="194" Column="4" TopLine="175"/>
       </Position26>
+      <Position27>
+        <Filename Value="ulistview.pas"/>
+        <Caret Line="186" Column="29" TopLine="175"/>
+      </Position27>
+      <Position28>
+        <Filename Value="ulistview.pas"/>
+        <Caret Line="200" Column="15" TopLine="176"/>
+      </Position28>
+      <Position29>
+        <Filename Value="Schedule.lpr"/>
+        <Caret Line="10" Column="83" TopLine="1"/>
+      </Position29>
+      <Position30>
+        <Filename Value="Schedule.lpr"/>
+        <Caret Line="22" Column="1" TopLine="1"/>
+      </Position30>
     </JumpHistory>
   </ProjectSession>
   <EditorMacros Count="0"/>

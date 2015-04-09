@@ -18,14 +18,16 @@ type
     ButtonAddFilter: TButton;
     CBTypeOfSort: TComboBox;
     CBOrderBy: TComboBox;
+    ComboBox1: TComboBox;
     DataSource: TDataSource;
     DBGrid: TDBGrid;
     DBNavigator: TDBNavigator;
-    PairSplitter1: TPairSplitter;
+    Edit1: TEdit;
+    PairSplitter: TPairSplitter;
     PairSplitterSide1: TPairSplitterSide;
     PairSplitterSide2: TPairSplitterSide;
-    ScrollBox1: TScrollBox;
-    SpeedButton1: TSpeedButton;
+    ScrollBox: TScrollBox;
+    SpeedButtonOK: TSpeedButton;
     SQLQuery: TSQLQuery;
     procedure ButtonAddFilterClick(Sender: TObject);
     procedure ButtonDeleteFilterClick(Sender: TObject);
@@ -35,11 +37,13 @@ type
     procedure SetTableColumns;
     procedure AddCBItem;
     procedure AddNewFilters;
-    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButtonOKClick(Sender: TObject);
+    function CreateSqlFilter: String;
+    procedure SetParams;
   private
     Filters: array of TMainFilter;
     CurSortColumn: Integer;
-    CurSortValue: Integer;
+    CurSortType: Integer;
     { private declarations }
   public
     { public declarations }
@@ -72,33 +76,31 @@ begin
     AddCBItem;
     AddNewFilters;
     Show;
-    CurSortValue := 0;
+    CurSortType := 0;
     CurSortColumn := -1;
   end;
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
-var
-  CurColTag: Integer;
 begin
   if (CurSortColumn <> Column.Tag) and (CurSortColumn <> -1) then
   begin
     CurSortColumn := Column.Tag;
-    CurSortValue := 0;
+    CurSortType := 0;
   end;
   if (CurSortColumn = Column.Tag) or (CurSortColumn = -1) then
   begin
     CurSortColumn := Column.Tag;
-    CurSortValue := (CurSortValue + 1) mod 3;
-    CurColTag := Column.Tag;
+    CurSortType := (CurSortType + 1) mod 3;
     SQLQuery.Close;
     SQLQuery.SQL.Clear;
-    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CurSortColumn, CurSortValue, ''));
+    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CurSortColumn, CurSortType, CreateSqlFilter));
+    SetParams;
     SQLQuery.Open;
     SetTableColumns;
     DBGrid.Columns[CurSortColumn].Width := DBGrid.Columns[CurSortColumn].Width + 16;
-    DBGrid.Columns[CurSortColumn].Title.ImageIndex := CurSortValue - 1;
-    if CurSortValue = 0 then
+    DBGrid.Columns[CurSortColumn].Title.ImageIndex := CurSortType - 1;
+    if CurSortType = 0 then
       CurSortColumn := -1;
   end;
 end;
@@ -115,8 +117,8 @@ begin
   for i := 0 to 2 do
     Filters[High(Filters) - i].Free;
   SetLength(Filters, Length(Filters) - 3);
-  ButtonAddFilter.Top := ScrollBox1.Tag;
-  ButtonDeleteFilter.Top := ScrollBox1.Tag;
+  ButtonAddFilter.Top := ScrollBox.Tag;
+  ButtonDeleteFilter.Top := ScrollBox.Tag;
   if Length(Filters) = 3 then
    ButtonDeleteFilter.Visible := False;
 end;
@@ -141,7 +143,6 @@ begin
           DBGrid.Columns[i].Tag := j;
           DBGrid.Columns[i].Visible := Visible;
           DBGrid.Columns[i].Title.ImageIndex := -1;
-          //ShowMessage(IntToStr(j) +'|'+IntToStr(i)+Caption);
         end;
 
         if (Tables[Tag].Fields[j] is TMyJoinedField) and (DBGrid.Columns[i].Title.Caption =
@@ -153,7 +154,6 @@ begin
           DBGrid.Columns[i].Width := JoinedFieldWidth;
           DBGrid.Columns[i].Visible := JoinedVisible;
           DBGrid.Columns[i].Title.ImageIndex := -1;
-          //ShowMessage(IntToStr(j) +'|'+IntToStr(i)+JoinedFieldCaption);
         end;
     end;
 end;
@@ -174,49 +174,67 @@ begin
   SetLength(Filters, Length(Filters) + 3);
   if Length(Filters) > 3 then
     ButtonDeleteFilter.Visible := True;
-  Filters[High(Filters) - 2] := TCBColumnName.Create(ScrollBox1, Tag);
-  Filters[High(Filters) - 1] := TCBFilterType.Create(ScrollBox1, Tag);
-  Filters[High(Filters)] := TEFilterValue.Create(ScrollBox1, Tag);
-  ButtonAddFilter.Top := ScrollBox1.Tag;
-  ButtonDeleteFilter.Top := ScrollBox1.Tag;
+  Filters[High(Filters) - 2] := TCBColumnName.Create(ScrollBox, Tag, SpeedButtonOK);
+  Filters[High(Filters) - 1] := TCBFilterType.Create(ScrollBox, Tag, SpeedButtonOK);
+  Filters[High(Filters)] := TEFilterValue.Create(ScrollBox, Tag, SpeedButtonOK);
+  ButtonAddFilter.Top := ScrollBox.Tag;
+  ButtonDeleteFilter.Top := ScrollBox.Tag;
 end;
 
-procedure TFormListView.SpeedButton1Click(Sender: TObject);
+procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
+begin
+  SpeedButtonOK.Down := True;
+  SQLQuery.Close;
+  SQLQuery.SQL.Clear;
+  SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CBOrderBy.ItemIndex, CBTypeOfSort.ItemIndex + 1, CreateSqlFilter));
+  SetParams;
+  SQLQuery.Open;
+  SetTableColumns;
+end;
+
+function TFormListView.CreateSqlFilter: String;
+var
+  i, a: Integer;
+  curs: String;
+begin
+  Result := '';
+  for i := 0 to (High(Filters) div 3) do
+  begin
+    if i = 0 then
+      curs := ' WHERE %s.%s %s :p%d '
+    else
+      curs := ' AND %s.%s %s :p%d';
+    a := 3 * i;
+    //if Filters[a + 1].GetFilterType = 'LIKE' then
+      //curs := ' AND %s.%s %s :p%d';
+
+    if Filters[a + 2].GetFilterValue <> '' then
+      if Tables[Tag].Fields[Filters[a].GetColumn] is TMyJoinedField then
+        Result += Format(curs, [
+          (Tables[Tag].Fields[Filters[a].GetColumn] as TMyJoinedField).ReferencedTable,
+          (Tables[Tag].Fields[Filters[a].GetColumn] as TMyJoinedField).JoinedFieldName,
+          Filters[a + 1].GetFilterType,a])
+      else
+        Result += Format(curs, [Tables[Tag].Name, Tables[Tag].Fields[Filters[a].GetColumn].Name,
+          Filters[a + 1].GetFilterType, a]);
+  end;
+end;
+
+procedure TFormListView.SetParams;
 var
   i, a: Integer;
   s: String;
 begin
-  if Filters[2].GetFilterValue <> '' then
-    if Tables[Tag].Fields[Filters[0].GetColumn] is TMyJoinedField then
-      s := Format(' WHERE CAST(%s.%s as VARCHAR(100))%s''%s'' ', [(Tables[Tag].Fields[Filters[0].GetColumn] as TMyJoinedField).ReferencedTable,
-        (Tables[Tag].Fields[Filters[0].GetColumn] as TMyJoinedField).JoinedFieldName,
-        Filters[1].GetFilterType, Filters[2].GetFilterValue])
-    else
-      //s := Format(' WHERE CAST(%s.%s as VARCHAR(100)) %s ', [Tables[Tag].Name, Tables[Tag].Fields[Filters[0].GetColumn].Name, ':p']);
-      s := Format(' WHERE CAST(%s.%s as VARCHAR(100))%s''%s'' ', [Tables[Tag].Name, Tables[Tag].Fields[Filters[0].GetColumn].Name,
-        Filters[1].GetFilterType, Filters[2].GetFilterValue]);
-  for i := 1 to (High(Filters) div 3) do
+  for i := 0 to (High(Filters) div 3) do
   begin
     a := 3 * i;
+    if Filters[a + 1].GetFilterType = 'LIKE' then
+      s := '%' + Filters[a + 2].GetFilterValue + '%'
+    else
+      s := Filters[a + 2].GetFilterValue;
     if Filters[a + 2].GetFilterValue <> '' then
-      if Tables[Tag].Fields[Filters[a].GetColumn] is TMyJoinedField then
-        s += Format(' AND CAST(%s.%s as VARCHAR(100))%s''%s'' ', [(Tables[Tag].Fields[Filters[a].GetColumn] as TMyJoinedField).ReferencedTable,
-          (Tables[Tag].Fields[Filters[a].GetColumn] as TMyJoinedField).JoinedFieldName,
-          Filters[a + 1].GetFilterType, Filters[a + 2].GetFilterValue])
-      else
-        s += Format(' AND CAST(%s.%s as VARCHAR(100))%s''%s'' ', [Tables[Tag].Name, Tables[Tag].Fields[Filters[a].GetColumn].Name,
-          Filters[a + 1].GetFilterType, Filters[a + 2].GetFilterValue]);
+      SQLQuery.ParamByName('p' + IntToStr(a)).AsString := s;
   end;
-  SQLQuery.Close;
-  SQLQuery.SQL.Clear;
-  SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CBOrderBy.ItemIndex, CBTypeOfSort.ItemIndex + 1, s));//' WHERE :p1 :p2 :p3 '));
-  ShowMessage(SQLQuery.SQL.Text);
-  //SQLQuery.Prepare;
-  //SQLQuery.ParamByName('p1').AsString := Filters[1].GetFilterType;
-  //SQLQuery.ParamByName('p').AsString := Filters[1].GetFilterType + Filters[2].GetFilterValue;
-  //ShowMessage(SQLQuery.SQL.Text);
-  SQLQuery.Open;
-  SetTableColumns;
 end;
 
 end.

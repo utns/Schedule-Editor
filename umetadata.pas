@@ -172,20 +172,13 @@ begin
   for i := 1 to FieldsCount - 1 do
   begin
 
-    if (Fields[i] is TMyJoinedField) then
-      Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
-        + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName
+  if (Fields[i] is TMyJoinedField) then
+    Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
+      + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName
     else
       Result += ', ' + Name + '.' + Fields[i].Name;
   end;
 
- { for i := 1 to FieldsCount - 1 do
-  begin
-    Result += ', ' + Name + '.' + Fields[i].Name;
-    if (Fields[i] is TMyJoinedField) then
-      Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
-        + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName;
-  end;}
   Result += ' FROM ' + Name;
 end;
 

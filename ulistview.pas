@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, sqldb, IBConnection, db, FileUtil, Forms, Controls,
-  Graphics, Dialogs, DbCtrls, DBGrids, ExtCtrls, StdCtrls, Buttons,
-  PairSplitter, UMetadata, USQLQueries, UFilters;
+  Graphics, Dialogs, DbCtrls, DBGrids, ExtCtrls, Buttons,
+  PairSplitter, UMetadata, UFilters;
 
 type
 
@@ -78,6 +78,7 @@ end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
 begin
+  Mouse.CursorPos := Point(Mouse.CursorPos.x + 1, Mouse.CursorPos.y);
   if (CurSortColumn <> Column.Index) and (CurSortColumn <> -1) then
   begin
     CurSortColumn := Column.Index;
@@ -125,17 +126,15 @@ begin
         begin
           DBGrid.Columns[i].Title.Caption := Caption;
           DBGrid.Columns[i].Width := Width;
-          //DBGrid.Columns[i].Tag := j;
           DBGrid.Columns[i].Visible := Visible;
           DBGrid.Columns[i].Title.ImageIndex := -1;
         end;
 
-        if (Tables[Tag].Fields[j] is TMyJoinedField) and (DBGrid.Columns[i].Title.Caption =
-          UpperCase((Tables[Tag].Fields[j] as TMyJoinedField).JoinedFieldName)) then
+      if (Tables[Tag].Fields[j] is TMyJoinedField) and (DBGrid.Columns[i].Title.Caption =
+        UpperCase((Tables[Tag].Fields[j] as TMyJoinedField).JoinedFieldName)) then
         with (Tables[Tag].Fields[j] as TMyJoinedField) do
         begin
           DBGrid.Columns[i].Title.Caption := JoinedFieldCaption;
-          //DBGrid.Columns[i].Tag := j;
           DBGrid.Columns[i].Width := JoinedFieldWidth;
           DBGrid.Columns[i].Visible := JoinedVisible;
           DBGrid.Columns[i].Title.ImageIndex := -1;
@@ -154,7 +153,6 @@ begin
   Filters[High(Filters) - 2] := TCBColumnName.Create(ScrollBox, Tag, SpeedButtonOK);
   Filters[High(Filters) - 1] := TCBFilterType.Create(ScrollBox, Tag, SpeedButtonOK);
   Filters[High(Filters)] := TEFilterValue.Create(ScrollBox, Tag, SpeedButtonOK);
-  SpeedButtonAddFilter.Top := ScrollBox.Tag;
   SpeedButtonDeleteFilter.Top := ScrollBox.Tag;
 end;
 
@@ -170,70 +168,93 @@ begin
   for i := 0 to 3 do
     Filters[High(Filters) - i].Free;
   SetLength(Filters, Length(Filters) - 4);
-  SpeedButtonAddFilter.Top := ScrollBox.Tag;
   SpeedButtonDeleteFilter.Top := ScrollBox.Tag;
   if Length(Filters) = 4 then
    SpeedButtonDeleteFilter.Visible := False;
+  SpeedButtonOK.Down := False;
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
 begin
-  SpeedButtonOK.Down := True;
-  SQLQuery.Close;
-  SQLQuery.SQL.Clear;
-  SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(-1, -1, CreateSqlFilter));
-  SetParams;
-  SQLQuery.Open;
-  SetTableColumns;
+  if (Length(Filters) > 4) and (Filters[3].GetFilterValue = '') then
+  begin
+      ShowMessage('Установите значение первого фильтра.');
+      SpeedButtonOK.Down := False;
+  end
+  else
+  begin
+    SpeedButtonOK.Down := True;
+    SQLQuery.Close;
+    SQLQuery.SQL.Clear;
+    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(-1, -1, CreateSqlFilter));
+    SetParams;
+    SQLQuery.Open;
+    SetTableColumns;
+  end;
 end;
 
 function TFormListView.CreateSqlFilter: String;
 var
-  i, a: Integer;
-  curs: String;
+  i, GroupFilters: Integer;
+  s, FilterType: String;
 begin
   Result := '';
-  curs := ' WHERE %s.%s %s :p%d ';
+
+  s := ' WHERE %s.%s %s :p%d ';
+  case Filters[2].GetFilterType of
+    'Substring', 'Begin': FilterType := 'LIKE';
+    else FilterType := Filters[2].GetFilterType;
+  end;
+
   if Filters[3].GetFilterValue <> '' then
       if Tables[Tag].Fields[Filters[1].GetColumn] is TMyJoinedField then
-        Result += Format(curs, [
+        Result += Format(s, [
           (Tables[Tag].Fields[Filters[1].GetColumn] as TMyJoinedField).ReferencedTable,
           (Tables[Tag].Fields[Filters[1].GetColumn] as TMyJoinedField).JoinedFieldName,
-          Filters[2].GetFilterType, a])
+          FilterType, 0])
       else
-        Result += Format(curs, [Tables[Tag].Name, Tables[Tag].Fields[Filters[a + 1].GetColumn].Name,
-          Filters[a + 2].GetFilterType, a]);
+        Result += Format(s, [Tables[Tag].Name, Tables[Tag].Fields[Filters[1].GetColumn].Name,
+          FilterType, 0]);
+
   for i := 1 to (High(Filters) div 4) do
   begin
-    curs := ' %s %s.%s %s :p%d';
-    a := 4 * i;
-    if Filters[a + 3].GetFilterValue <> '' then
-      if Tables[Tag].Fields[Filters[a + 1].GetColumn] is TMyJoinedField then
-        Result += Format(curs, [
-          Filters[a].GetFilterAndOr,
-          (Tables[Tag].Fields[Filters[a + 1].GetColumn] as TMyJoinedField).ReferencedTable,
-          (Tables[Tag].Fields[Filters[a + 1].GetColumn] as TMyJoinedField).JoinedFieldName,
-          Filters[a + 2].GetFilterType, a])
+    s := ' %s %s.%s %s :p%d';
+    GroupFilters := 4 * i;
+    case Filters[GroupFilters + 2].GetFilterType of
+      'Substring', 'Begin': FilterType := 'LIKE';
+      else FilterType := Filters[GroupFilters + 2].GetFilterType;
+    end;
+
+    if Filters[GroupFilters + 3].GetFilterValue <> '' then
+      if Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn] is TMyJoinedField then
+        Result += Format(s, [
+          Filters[GroupFilters].GetFilterAndOr,
+          (Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn] as TMyJoinedField).ReferencedTable,
+          (Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn] as TMyJoinedField).JoinedFieldName,
+          FilterType, i])
       else
-        Result += Format(curs, [Tables[Tag].Name, Tables[Tag].Fields[Filters[a + 1].GetColumn].Name,
-          Filters[a + 2].GetFilterType, a]);
+        Result += Format(s, [Filters[GroupFilters].GetFilterAndOr, Tables[Tag].Name,
+        Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn].Name, FilterType, i]);
   end;
 end;
 
 procedure TFormListView.SetParams;
 var
-  i, a: Integer;
-  s: String;
+  i, GroupFilters: Integer;
+  FilterValue: String;
 begin
   for i := 0 to (High(Filters) div 4) do
   begin
-    a := 4 * i;
-    if Filters[a + 2].GetFilterType = 'LIKE' then
-      s := '%' + Filters[a + 3].GetFilterValue + '%'
-    else
-      s := Filters[a + 3].GetFilterValue;
-    if Filters[a + 3].GetFilterValue <> '' then
-      SQLQuery.ParamByName('p' + IntToStr(a)).AsString := s;
+    GroupFilters := 4 * i;
+    if Filters[GroupFilters + 3].GetFilterValue <> '' then
+    begin
+      case Filters[GroupFilters + 2].GetFilterType of
+        'Substring': FilterValue := '%' + Filters[GroupFilters + 3].GetFilterValue + '%';
+        'Begin': FilterValue := Filters[GroupFilters + 3].GetFilterValue + '%';
+        else FilterValue := Filters[GroupFilters + 3].GetFilterValue;
+      end;
+      SQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
+    end;
   end;
 end;
 

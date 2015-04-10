@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 1463
+  Left = 2044
   Height = 20
-  Top = 735
+  Top = 772
   Width = 230
   Caption = 'Расписание'
   Constraints.MaxHeight = 20
@@ -10,7 +10,7 @@ object MainForm: TMainForm
   Constraints.MinWidth = 230
   Menu = MainMenu
   OnCreate = FormCreate
-  LCLVersion = '1.0.12.0'
+  LCLVersion = '1.2.4.0'
   object MainMenu: TMainMenu
     left = 32
     top = 32

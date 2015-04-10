@@ -1,7 +1,7 @@
 object FormListView: TFormListView
-  Left = 1243
+  Left = 2019
   Height = 684
-  Top = 9
+  Top = 15
   Width = 557
   Caption = 'FormListView'
   ClientHeight = 684
@@ -42,6 +42,7 @@ object FormListView: TFormListView
         Color = clWindow
         Columns = <>
         DataSource = DataSource
+        Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
         TabOrder = 0
         TitleImageList = DataModuleMain.ImageList
         OnTitleClick = DBGridTitleClick
@@ -105,7 +106,7 @@ object FormListView: TFormListView
         Height = 189
         Top = 35
         Width = 547
-        HorzScrollBar.Page = 475
+        HorzScrollBar.Page = 442
         VertScrollBar.Page = 71
         Align = alCustom
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -117,7 +118,7 @@ object FormListView: TFormListView
         ClientWidth = 543
         TabOrder = 1
         object SpeedButtonDeleteFilter: TSpeedButton
-          Left = 405
+          Left = 410
           Height = 23
           Top = 48
           Width = 32
@@ -196,9 +197,9 @@ object FormListView: TFormListView
           OnClick = SpeedButtonDeleteFilterClick
         end
         object SpeedButtonAddFilter: TSpeedButton
-          Left = 443
+          Left = 410
           Height = 23
-          Top = 48
+          Top = 10
           Width = 32
           Glyph.Data = {
             7A080000424D7A08000000000000360000002800000017000000170000000100

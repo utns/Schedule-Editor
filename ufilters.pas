@@ -154,7 +154,7 @@ begin
   FComboBoxFilterType := TComboBox.Create(AWinControl);
   with FComboBoxFilterType do
   begin
-    Width := 80;
+    Width := 90;
     Left := 160;
     Height := 23;
     Top := AWinControl.Tag;
@@ -166,7 +166,8 @@ begin
     Items.Add('>=');
     Items.Add('<>');
     Items.Add('=');
-    Items.Add('Подстрока');
+    Items.Add('Содержит');
+    Items.Add('Начинается с');
     ItemIndex := 0;
     OnChange := @Change;
   end;
@@ -179,10 +180,11 @@ end;
 
 function TCBFilterType.GetFilterType: String;
 begin
-  if FComboBoxFilterType.Items[FComboBoxFilterType.ItemIndex] = 'Подстрока' then
-    Result := 'LIKE'
-  else
-    Result := FComboBoxFilterType.Items[FComboBoxFilterType.ItemIndex];
+  case FComboBoxFilterType.Items[FComboBoxFilterType.ItemIndex] of
+    'Содержит': Result := 'Substring';
+    'Начинается с': Result := 'Begin';
+    else Result := FComboBoxFilterType.Items[FComboBoxFilterType.ItemIndex];
+  end
 end;
 
 { TEFilterValue }
@@ -195,7 +197,7 @@ begin
   begin
     Width := 150;
     Height := 23;
-    Left := 245;
+    Left := 255;
     Top := AWinControl.Tag;
     Parent := AWinControl;
     OnChange := @Change;

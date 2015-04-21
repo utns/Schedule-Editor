@@ -7,13 +7,14 @@ interface
 uses
   Classes, SysUtils, sqldb, IBConnection, db, FileUtil, Forms, Controls,
   Graphics, Dialogs, DbCtrls, DBGrids, ExtCtrls, Buttons,
-  PairSplitter, UMetadata, UFilters;
+  PairSplitter, StdCtrls, UMetadata, UFilters, UEditForm;
 
 type
 
   { TFormListView }
 
   TFormListView = class(TForm)
+    Button1: TButton;
     DataSource: TDataSource;
     DBGrid: TDBGrid;
     DBNavigator: TDBNavigator;
@@ -22,9 +23,9 @@ type
     PairSplitterSide2: TPairSplitterSide;
     ScrollBox: TScrollBox;
     SpeedButtonAddFilter: TSpeedButton;
-    SpeedButtonDeleteFilter: TSpeedButton;
     SpeedButtonOK: TSpeedButton;
     SQLQuery: TSQLQuery;
+    procedure Button1Click(Sender: TObject);
     procedure ButtonAddFilterClick(Sender: TObject);
     procedure CreateNew(AName, ACaption: String; ATag: Integer);
     procedure DBGridTitleClick(Column: TColumn);
@@ -32,12 +33,13 @@ type
     procedure SetTableColumns;
     procedure AddNewFilters;
     procedure SpeedButtonAddFilterClick(Sender: TObject);
-    procedure SpeedButtonDeleteFilterClick(Sender: TObject);
+    procedure ButtonDeleteFilterMouseUp(Sender: TObject;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SpeedButtonOKClick(Sender: TObject);
     function CreateSqlFilter: String;
     procedure SetParams;
   private
-    Filters: array of TMainFilter;
+    Filters: array of TPanelFilter;
     CurSortColumn: Integer;
     CurSortType: Integer;
     { private declarations }
@@ -109,6 +111,11 @@ begin
   AddNewFilters;
 end;
 
+procedure TFormListView.Button1Click(Sender: TObject);
+begin
+  EditForm.CreateNew(Self);
+end;
+
 procedure TFormListView.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   CloseAction := caFree;
@@ -144,16 +151,10 @@ end;
 
 procedure TFormListView.AddNewFilters;
 begin
-  SetLength(Filters, Length(Filters) + 4);
-  if Length(Filters) > 4 then
-  begin
-    SpeedButtonDeleteFilter.Visible := True;
-    Filters[High(Filters) - 3] := TCBAndOr.Create(ScrollBox, Tag, SpeedButtonOK);
-  end;
-  Filters[High(Filters) - 2] := TCBColumnName.Create(ScrollBox, Tag, SpeedButtonOK);
-  Filters[High(Filters) - 1] := TCBFilterType.Create(ScrollBox, Tag, SpeedButtonOK);
-  Filters[High(Filters)] := TEFilterValue.Create(ScrollBox, Tag, SpeedButtonOK);
-  SpeedButtonDeleteFilter.Top := ScrollBox.Tag;
+  SetLength(Filters, Length(Filters) + 1);
+  Filters[High(Filters)] := TPanelFilter.Create(ScrollBox, Tag, SpeedButtonOK, High(Filters));
+  if High(Filters) > 0 then
+    Filters[High(Filters)].FSBDeleteFilter.FBitBtnDelete.OnMouseUp := @ButtonDeleteFilterMouseUp;
 end;
 
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
@@ -161,22 +162,26 @@ begin
   AddNewFilters;
 end;
 
-procedure TFormListView.SpeedButtonDeleteFilterClick(Sender: TObject);
+procedure TFormListView.ButtonDeleteFilterMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  i: Integer;
+  i, PanelTag: Integer;
 begin
-  for i := 0 to 3 do
-    Filters[High(Filters) - i].Free;
-  SetLength(Filters, Length(Filters) - 4);
-  SpeedButtonDeleteFilter.Top := ScrollBox.Tag;
-  if Length(Filters) = 4 then
-   SpeedButtonDeleteFilter.Visible := False;
+  PanelTag := (Sender as TBitBtn).Parent.Tag;
+  Filters[PanelTag].Free;
+  for i := PanelTag to High(Filters) - 1 do
+  begin
+    Filters[i] := Filters[i + 1];
+    Filters[i].Tag := i;
+    Filters[i].Top := i * 33;
+  end;
+  SetLength(Filters, Length(Filters) - 1);
   SpeedButtonOK.Down := False;
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
 begin
-  if (Length(Filters) > 4) and (Filters[3].GetFilterValue = '') then
+  if (Length(Filters) > 1) and (Filters[0].GetFilterValue = '') then
   begin
       ShowMessage('Установите значение первого фильтра.');
       SpeedButtonOK.Down := False;
@@ -195,68 +200,72 @@ end;
 
 function TFormListView.CreateSqlFilter: String;
 var
-  i, GroupFilters: Integer;
+  i: Integer;
   s, FilterType: String;
 begin
   Result := '';
-
-  s := ' WHERE %s.%s %s :p%d ';
-  case Filters[2].GetFilterType of
-    'Substring', 'Begin': FilterType := 'LIKE';
-    else FilterType := Filters[2].GetFilterType;
-  end;
-
-  if Filters[3].GetFilterValue <> '' then
-      if Tables[Tag].Fields[Filters[1].GetColumn] is TMyJoinedField then
-        Result += Format(s, [
-          (Tables[Tag].Fields[Filters[1].GetColumn] as TMyJoinedField).ReferencedTable,
-          (Tables[Tag].Fields[Filters[1].GetColumn] as TMyJoinedField).JoinedFieldName,
-          FilterType, 0])
-      else
-        Result += Format(s, [Tables[Tag].Name, Tables[Tag].Fields[Filters[1].GetColumn].Name,
-          FilterType, 0]);
-
-  for i := 1 to (High(Filters) div 4) do
+  with Tables[Tag] do
   begin
-    s := ' %s %s.%s %s :p%d';
-    GroupFilters := 4 * i;
-    case Filters[GroupFilters + 2].GetFilterType of
-      'Substring', 'Begin': FilterType := 'LIKE';
-      else FilterType := Filters[GroupFilters + 2].GetFilterType;
+    with Filters[0] do
+    begin
+      s := ' WHERE %s.%s %s :p%d ';
+      case GetFilterType of
+       'Substring', 'Begin': FilterType := 'LIKE';
+       else FilterType := GetFilterType;
+      end;
+
+      if GetFilterValue <> '' then
+        if Fields[GetColumn] is TMyJoinedField then
+          Result += Format(s, [(Fields[GetColumn] as TMyJoinedField).ReferencedTable,
+            (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
+            FilterType, 0])
+        else
+          Result += Format(s, [Name, Fields[GetColumn].Name, FilterType, 0]);
     end;
 
-    if Filters[GroupFilters + 3].GetFilterValue <> '' then
-      if Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn] is TMyJoinedField then
-        Result += Format(s, [
-          Filters[GroupFilters].GetFilterAndOr,
-          (Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn] as TMyJoinedField).ReferencedTable,
-          (Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn] as TMyJoinedField).JoinedFieldName,
-          FilterType, i])
-      else
-        Result += Format(s, [Filters[GroupFilters].GetFilterAndOr, Tables[Tag].Name,
-        Tables[Tag].Fields[Filters[GroupFilters + 1].GetColumn].Name, FilterType, i]);
+    for i := 1 to High(Filters) do
+    begin
+      with Filters[i] do
+      begin
+        s := ' %s %s.%s %s :p%d';
+        case GetFilterType of
+          'Substring', 'Begin': FilterType := 'LIKE';
+          else FilterType := GetFilterType;
+        end;
+
+        if GetFilterValue <> '' then
+          if Fields[GetColumn] is TMyJoinedField then
+            Result += Format(s, [GetFilterAndOr,
+              (Fields[GetColumn] as TMyJoinedField).ReferencedTable,
+              (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
+              FilterType, i])
+          else
+            Result += Format(s, [GetFilterAndOr, Name, Fields[GetColumn].Name,
+              FilterType, i]);
+      end;
+    end;
   end;
 end;
 
 procedure TFormListView.SetParams;
 var
-  i, GroupFilters: Integer;
+  i: Integer;
   FilterValue: String;
 begin
-  for i := 0 to (High(Filters) div 4) do
-  begin
-    GroupFilters := 4 * i;
-    if Filters[GroupFilters + 3].GetFilterValue <> '' then
+  for i := 0 to High(Filters) do
+    with Filters[i] do
     begin
-      case Filters[GroupFilters + 2].GetFilterType of
-        'Substring': FilterValue := '%' + Filters[GroupFilters + 3].GetFilterValue + '%';
-        'Begin': FilterValue := Filters[GroupFilters + 3].GetFilterValue + '%';
-        else FilterValue := Filters[GroupFilters + 3].GetFilterValue;
+      if GetFilterValue <> '' then
+      begin
+        case GetFilterType of
+          'Substring': FilterValue := '%' + GetFilterValue + '%';
+          'Begin': FilterValue := GetFilterValue + '%';
+          else FilterValue := GetFilterValue;
+        end;
+        SQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
       end;
-      SQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
     end;
-  end;
 end;
 
 end.
-
+

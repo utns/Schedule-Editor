@@ -1,13 +1,13 @@
 object DataModuleMain: TDataModuleMain
   OldCreateOrder = False
   Height = 120
-  HorizontalOffset = 2636
-  VerticalOffset = 39
+  HorizontalOffset = 2503
+  VerticalOffset = 66
   Width = 234
   object IBConnection: TIBConnection
     Connected = False
     LoginPrompt = False
-    DatabaseName = 'D:\1FBD\Schedule\testBD\SCHEDULE.FDB'
+    DatabaseName = 'D:\1FBD\final v2\SCHEDULE.FDB'
     KeepConnection = False
     Password = 'masterkey'
     Transaction = SQLTransaction

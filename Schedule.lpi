@@ -39,7 +39,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="Schedule.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -92,6 +92,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UFilters"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="ueditform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="EditForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UEditForm"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

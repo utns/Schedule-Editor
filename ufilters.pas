@@ -6,70 +6,195 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls,
-  Graphics, Dialogs, DbCtrls, ExtCtrls, StdCtrls, UMetadata, Buttons;
+  Graphics, Dialogs, DbCtrls, ExtCtrls, StdCtrls, UMetadata, Buttons, UDBConnection;
 
 type
 
   { TMainFilter }
 
-  TMainFilter = Class
+  TMainFilter = class
   private
     FSpeedButton: TSpeedButton;
     procedure Change(Sender: TObject);
   public
     constructor Create(ASpeedButton: TSpeedButton);
     constructor Free; virtual;
-    function GetColumn: Integer; virtual;
-    function GetFilterType: String; virtual;
-    function GetFilterValue: String; virtual;
-    function GetFilterAndOr: String; virtual;
   end;
 
   { TCBColumnName }
 
-  TCBColumnName =class(TMainFilter)
+  TCBColumnName = class(TMainFilter)
   private
     FComboBoxColumnName: TComboBox;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
     constructor Free; override;
-    function GetColumn: Integer; override;
+    function GetColumn: Integer;
   end;
 
   { TCBFilterType }
 
-  TCBFilterType =class(TMainFilter)
+  TCBFilterType = class(TMainFilter)
   private
     FComboBoxFilterType: TComboBox;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
     constructor Free; override;
-    function GetFilterType: String; override;
+    function GetFilterType: String;
   end;
 
   { TCBAndOr }
 
-  TCBAndOr =class(TMainFilter)
+  TCBAndOr = class(TMainFilter)
   private
     FComboBoxAndOr: TComboBox;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
     constructor Free; override;
-    function GetFilterAndOr: String; override;
+    function GetFilterAndOr: String;
   end;
 
   { TEFilterValue }
 
-  TEFilterValue =class(TMainFilter)
+  TEFilterValue = class(TMainFilter)
   private
-     FEditFilterValue: TEdit;
+    FEditFilterValue: TEdit;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
     constructor Free; override;
-    function GetFilterValue: String; override;
+    function GetFilterValue: String;
+  end;
+
+  { TBBDeleteFilter }
+
+  TBBDeleteFilter = class(TMainFilter)
+  public
+    FBitBtnDelete: TBitBtn;
+    constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
+    Constructor Free; override;
+  end;
+
+  { TPanelFilter }
+
+  TPanelFilter = class
+  private
+    FPanel: TPanel;
+    FCBColumnName: TCBColumnName;
+    FCBFilterType: TCBFilterType;
+    FCBAndOr: TCBAndOr;
+    FEFilterValue: TEFilterValue;
+    procedure SetTag(AValue: PtrInt);
+    procedure SetTop(AValue: Integer);
+  public
+    FSBDeleteFilter: TBBDeleteFilter;
+    Constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton; ATag: Integer);
+    Constructor Free;
+    function GetColumn: Integer;
+    function GetFilterType: String;
+    function GetFilterValue: String;
+    function GetFilterAndOr: String;
+    property Tag: PtrInt write SetTag;
+    property Top: Integer write SetTop;
   end;
 
 implementation
+
+{ TPanelFilter }
+
+procedure TPanelFilter.SetTag(AValue: PtrInt);
+begin
+  FPanel.Tag := AValue;
+end;
+
+procedure TPanelFilter.SetTop(AValue: Integer);
+begin
+  FPanel.Top := AValue;
+end;
+
+constructor TPanelFilter.Create(AWinControl: TWinControl; ACurTable: Integer;
+  ASpeedButton: TSpeedButton; ATag: Integer);
+begin
+  FPanel := TPanel.Create(AWinControl);
+  with FPanel do
+  begin
+    Width := 445;
+    Left := 0;
+    Height := 33;
+    Parent := AWinControl;
+    Tag := ATag;
+    Top := Tag * Height;
+  end;
+  if ATag > 0 then
+  begin
+    FCBAndOr := TCBAndOr.Create(FPanel, ACurTable, ASpeedButton);
+    FSBDeleteFilter := TBBDeleteFilter.Create(FPanel, ACurTable, ASpeedButton);
+  end;
+  FCBColumnName := TCBColumnName.Create(FPanel, ACurTable, ASpeedButton);
+  FCBFilterType := TCBFilterType.Create(FPanel, ACurTable, ASpeedButton);
+  FEFilterValue := TEFilterValue.Create(FPanel, ACurTable, ASpeedButton);
+end;
+
+constructor TPanelFilter.Free;
+begin
+  FPanel.Free;
+end;
+
+function TPanelFilter.GetColumn: Integer;
+begin
+  Result := FCBColumnName.GetColumn;
+end;
+
+function TPanelFilter.GetFilterType: String;
+begin
+  Result := FCBFilterType.GetFilterType;
+end;
+
+function TPanelFilter.GetFilterValue: String;
+begin
+  Result := FEFilterValue.GetFilterValue;
+end;
+
+function TPanelFilter.GetFilterAndOr: String;
+begin
+  Result := FCBAndOr.GetFilterAndOr;
+end;
+
+{ TBBDeleteFilter }
+
+constructor TBBDeleteFilter.Create(AWinControl: TWinControl;
+  ACurTable: Integer; ASpeedButton: TSpeedButton);
+var
+  PNG: TPortableNetworkGraphic;
+  BMP: TBitmap;
+begin
+  Inherited Create(ASpeedButton);
+  FBitBtnDelete := TBitBtn.Create(AWinControl);
+  with FBitBtnDelete do
+  begin
+    Width := 25;
+    Left := 410;
+    Height := 23;
+    Visible := True;
+    {PNG := TPortableNetworkGraphic.Create;
+    BMP := TBitmap.Create;
+    PNG.LoadFromFile('Icons\Remove.png');
+    BMP.Assign(PNG);
+    Glyph := BMP;
+    Spacing := 0;
+    Layout := blGlyphTop;
+    BMP.Free;
+    PNG.Free; }
+    Parent := AWinControl;
+    Top := 5;
+    Hint := 'Удалить фильтр';
+    ShowHint := True;
+  end;
+end;
+
+constructor TBBDeleteFilter.Free;
+begin
+  FBitBtnDelete.Free;
+end;
 
 { TCBAndOr }
 
@@ -83,8 +208,7 @@ begin
     Width := 50;
     Left := 10;
     Height := 23;
-    AWinControl.Tag := AWinControl.Tag + Height + 5;
-    Top := AWinControl.Tag;
+    Top := 5;
     Parent := AWinControl;
     ReadOnly := True;
     Items.Add('И');
@@ -122,14 +246,15 @@ begin
     Width := 90;
     Left := 65;
     Height := 23;
-    Top := AWinControl.Tag;
+    Top := 5;
     Parent := AWinControl;
     ReadOnly := True;
-    for i := 0 to Tables[ACurTable].FieldsCount - 1 do
-      if Tables[ACurTable].Fields[i] is TMyJoinedField then
-        Items.Add((Tables[ACurTable].Fields[i] as TMyJoinedField).JoinedFieldCaption)
-      else
-        Items.Add(Tables[ACurTable].Fields[i].Caption);
+    with Tables[ACurTable] do
+      for i := 0 to FieldsCount - 1 do
+        if Fields[i] is TMyJoinedField then
+          Items.Add((Fields[i] as TMyJoinedField).JoinedFieldCaption)
+        else
+          Items.Add(Fields[i].Caption);
     ItemIndex := 0;
     OnChange := @Change;
   end;
@@ -157,7 +282,7 @@ begin
     Width := 90;
     Left := 160;
     Height := 23;
-    Top := AWinControl.Tag;
+    Top := 5;
     Parent := AWinControl;
     ReadOnly := True;
     Items.Add('<');
@@ -198,7 +323,7 @@ begin
     Width := 150;
     Height := 23;
     Left := 255;
-    Top := AWinControl.Tag;
+    Top := 5;
     Parent := AWinControl;
     OnChange := @Change;
   end;
@@ -206,7 +331,6 @@ end;
 
 constructor TEFilterValue.Free;
 begin
-  FEditFilterValue.Parent.Tag := FEditFilterValue.Parent.Tag - FEditFilterValue.Height - 5;
   FEditFilterValue.Free;
 end;
 
@@ -228,26 +352,6 @@ begin
 end;
 
 constructor TMainFilter.Free;
-begin
-
-end;
-
-function TMainFilter.GetColumn: Integer;
-begin
-
-end;
-
-function TMainFilter.GetFilterType: String;
-begin
-
-end;
-
-function TMainFilter.GetFilterValue: String;
-begin
-
-end;
-
-function TMainFilter.GetFilterAndOr: String;
 begin
 
 end;

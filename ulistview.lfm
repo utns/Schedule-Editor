@@ -216,6 +216,15 @@ object FormListView: TFormListView
         OnClick = ButtonAddClick
         TabOrder = 3
       end
+      object ButtonDelete: TButton
+        Left = 296
+        Height = 25
+        Top = 5
+        Width = 51
+        Caption = 'Delete'
+        OnClick = ButtonDeleteClick
+        TabOrder = 4
+      end
     end
   end
   object SQLQuery: TSQLQuery

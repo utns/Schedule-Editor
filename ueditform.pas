@@ -198,7 +198,6 @@ var
   i: integer;
   s: string;
 begin
-  //UPDATE Laptop SET hd = ram/2 WHERE hd < 10
   s := 'UPDATE ' + Tables[CurTable].Name + ' SET ' + Tables[CurTable].Fields[1].Name + ' = :p1';
   for i := 2 to Tables[CurTable].FieldsCount - 1 do
     s += ', ' + Tables[CurTable].Fields[i].Name + ' = :p' + IntToStr(i);
@@ -234,7 +233,6 @@ begin
     Open;
     Result := Fields[0].AsInteger;
     Free;
-    //ShowMessage(IntToStr(Result));
   end;
 end;
 

@@ -7,13 +7,14 @@ interface
 uses
   Classes, SysUtils, sqldb, IBConnection, db, FileUtil, Forms, Controls,
   Graphics, Dialogs, DbCtrls, DBGrids, ExtCtrls, Buttons,
-  PairSplitter, StdCtrls, UMetadata, UFilters, UEditForm;
+  PairSplitter, StdCtrls, UMetadata, UFilters, UEditForm, UDBConnection;
 
 type
 
   { TFormListView }
 
   TFormListView = class(TForm)
+    ButtonDelete: TButton;
     ButtonAdd: TButton;
     ButtonEdit: TButton;
     DataSource: TDataSource;
@@ -27,6 +28,7 @@ type
     SpeedButtonOK: TSpeedButton;
     SQLQuery: TSQLQuery;
     procedure ButtonAddClick(Sender: TObject);
+    procedure ButtonDeleteClick(Sender: TObject);
     procedure ButtonEditClick(Sender: TObject);
     procedure ButtonAddFilterClick(Sender: TObject);
     procedure CreateNew(AName, ACaption: String; ATag: Integer);
@@ -42,6 +44,7 @@ type
     function CreateSqlFilter: String;
     procedure SetParams;
     procedure SQLQueryAfterOpen(DataSet: TDataSet);
+    procedure DeleteSQL;
   private
     Filters: array of TPanelFilter;
     CurSortColumn: Integer;
@@ -124,6 +127,15 @@ end;
 procedure TFormListView.ButtonAddClick(Sender: TObject);
 begin
   EditForm.CreateNew(Self.Tag, DataSource, ftAdd, SQLQuery);
+end;
+
+procedure TFormListView.ButtonDeleteClick(Sender: TObject);
+var
+  ButtonSelected: Integer;
+begin
+  ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
+  if ButtonSelected = mrYes then
+    DeleteSQL;
 end;
 
 procedure TFormListView.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -280,6 +292,26 @@ end;
 procedure TFormListView.SQLQueryAfterOpen(DataSet: TDataSet);
 begin
   SetTableColumns;
+end;
+
+procedure TFormListView.DeleteSQL;
+var
+  s, id: String;
+begin
+  id := IntToStr(SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value);
+  with SQLQuery do
+  begin
+    s := SQL.Text;
+    Close;
+    SQL.Clear;
+    SQL.AddStrings('DELETE FROM ' + Tables[Self.Tag].Name + ' WHERE ' + Tables[Self.Tag].Fields[0].Name + ' = ' + id + ';' );
+    DataModuleMain.SQLTransaction.Commit;
+    ExecSQL;
+    SQL.Clear;
+    SQL.AddStrings(s);
+    Open;
+  end;
+
 end;
 
 end.

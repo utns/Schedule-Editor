@@ -234,45 +234,45 @@ end;
 initialization
   with RegisterTable('EducActivities', 'Учебная деятельность') do
   begin
-    AddNewField('EducID', 'ИД', 35, True);
+    //AddNewField('EducID', 'ИД', 35, True);
     AddNewField('EducName', 'Название', 100, True);
   end;
 
   with RegisterTable('Teachers', 'Преподаватели') do
   begin
-    AddNewField('TeacherID', 'ИД', 35, True);
+    //AddNewField('TeacherID', 'ИД', 35, True);
     AddNewField('TeacherInitials', 'Ф.И.О. преподавателя', 250, True);
   end;
 
   with RegisterTable('Groups', 'Группы') do
   begin
-    AddNewField('GroupID', 'ИД', 35, True);
+    //AddNewField('GroupID', 'ИД', 35, True);
     AddNewField('GroupNumber', 'Номер', 55, True);
     AddNewField('GroupName', 'Название группы', 285, True);
   end;
 
   with RegisterTable('Students', 'Студенты') do
   begin
-    AddNewField('StudentID', 'ИД', 35, True);
+    //AddNewField('StudentID', 'ИД', 35, True);
     AddNewField('StudentInitials', 'Ф.И.О. студента', 250, True);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
   end;
 
   with RegisterTable('Subjects', 'Предметы') do
   begin
-    AddNewField('SubjectID', 'ИД', 35, True);
+    //AddNewField('SubjectID', 'ИД', 35, True);
     AddNewField('SubjectName', 'Название предмета', 250, True);
   end;
 
   with RegisterTable('Audiences', 'Аудитории') do
   begin
-    AddNewField('AudienceID', 'ИД', 35, True);
+    //AddNewField('AudienceID', 'ИД', 35, True);
     AddNewField('AudienceNumber', 'Номер', 150, True);
   end;
 
   with RegisterTable('Pairs', 'Пары') do
   begin
-    AddNewField('PairID', 'ИД', 35, True);
+    //AddNewField('PairID', 'ИД', 35, True);
     AddNewField('PairBegin', 'Начало', 55, True);
     AddNewField('PairEnd', 'Конец', 50, True);
     AddNewField('PairNumber', 'Номер', 45, True);
@@ -280,7 +280,7 @@ initialization
 
   with RegisterTable('WeekDays', 'Дни недели') do
   begin
-    AddNewField('WeekDayID', 'ИД', 35, True);
+    //AddNewField('WeekDayID', 'ИД', 35, True);
     AddNewField('WeekDayName', 'Название', 90, True);
   end;
 

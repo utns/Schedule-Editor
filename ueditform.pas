@@ -12,16 +12,23 @@ type
 
   { TEditForm }
 
+  TFormType = (ftDelete, ftEdit, ftAdd);
+
   TEditForm = class(TForm)
     BitBtn1: TBitBtn;
     DataSource1: TDataSource;
-    DBComboBox1: TDBComboBox;
     DBLookupComboBox1: TDBLookupComboBox;
-    Panel1: TPanel;
     SQLQuery1: TSQLQuery;
-    procedure  CreateNew(AForm: TForm);
-    function CreateCB(ACurField: Integer; AForm: TEditForm): TDBLookupComboBox;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure  CreateNew(ACurTable: Integer; ADataSource: TDataSource; AFormType: TFormType; ASQLQuery: TSQLQuery);
+    procedure CreateCB(ACurField: Integer);
+    procedure CreateEdit(ACurField: Integer);
+    procedure CreateLable(ACurField: Integer);
   private
+    ListViewDataSource: TDataSource;
+    ListViewSQLQuery: TSQLQuery;
+    FormType: TFormType;
+    CurTable: Integer;
     { private declarations }
   public
     { public declarations }
@@ -36,60 +43,117 @@ implementation
 
 { TEditForm }
 
-procedure TEditForm.CreateNew(AForm: TForm);
+procedure TEditForm.CreateNew(ACurTable: Integer; ADataSource: TDataSource;
+  AFormType: TFormType; ASQLQuery: TSQLQuery);
 var
   AEditForm: TEditForm;
-  ACB: TDBLookupComboBox;
   i: Integer;
 begin
   AEditForm := TEditForm.Create(Application);
-  AEditForm.Tag := AForm.Tag;
-  //CreateCB(0, AEditForm);
-  for i := 0 to Tables[AForm.Tag].FieldsCount - 1 do
+  with AEditForm do
   begin
-    CreateCB(i, AEditForm);
+    ListViewDataSource := ADataSource;
+    ListViewSQLQuery := ASQLQuery;
+    CurTable := ACurTable;
+    FormType := AFormType;
+    Tag := ACurTable;
+    for i := 0 to Tables[ACurTable].FieldsCount - 1 do
+    begin
+      if Tables[ACurTable].Fields[i] is TMyJoinedField then
+        CreateCB(i)
+      else
+        CreateEdit(i);
+      CreateLable(i);
+    end;
+    Show;
   end;
-  AEditForm.Show;
+
+
+
 end;
 
-function TEditForm.CreateCB(ACurField: Integer; AForm: TEditForm
-  ): TDBLookupComboBox;
+procedure TEditForm.BitBtn1Click(Sender: TObject);
+begin
+  //DataModuleMain.SQLTransaction.Commit;
+end;
+
+procedure TEditForm.CreateCB(ACurField: Integer);
 var
-  FCB: TDBLookupComboBox;
+  FDBEdit: TDBEdit;
+  FLookupCB: TDBLookupComboBox;
   FSQLQuery: TSQLQuery;
   FDataSource: TDataSource;
 begin
-  FSQLQuery := TSQLQuery.Create(AForm);
+  FSQLQuery := TSQLQuery.Create(Self);
   with FSQLQuery do
   begin
     DataBase := DataModuleMain.IBConnection;
     Transaction := DataModuleMain.SQLTransaction;
     SQL.Clear;
-    if Tables[AForm.Tag].Fields[ACurField] is TMyJoinedField then
-      SQL.AddStrings(Format('SELECT %s FROM %s', [(Tables[AForm.Tag].Fields[ACurField] as TMyJoinedField).JoinedFieldName,
-        (Tables[AForm.Tag].Fields[ACurField] as TMyJoinedField).ReferencedTable]))
-    else
-      SQL.AddStrings(Format('SELECT %s FROM %s', [Tables[AForm.Tag].Fields[ACurField].Name, Tables[AForm.Tag].Name]));
+    SQL.AddStrings(Format('SELECT %s FROM %s', [(Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName,
+      (Tables[CurTable].Fields[ACurField] as TMyJoinedField).ReferencedTable]));
     Open;
   end;
 
-  FDataSource := TDataSource.Create(AForm);
+  FDataSource := TDataSource.Create(Self);
   FDataSource.DataSet := FSQLQuery;
 
-  FCB := TDBLookupComboBox.Create(AForm);
-  with FCB do
+  FLookupCB := TDBLookupComboBox.Create(Self);
+  with FLookupCB do
   begin
     Visible := True;
-    Width := 200;
-    Left := 65;
+    Width := 250;
+    Left := 110;
     Height := 23;
     Top := 5 + 28 * ACurField;
-    Parent := AForm;
-    if Tables[AForm.Tag].Fields[ACurField] is TMyJoinedField then
-      KeyField := (Tables[AForm.Tag].Fields[ACurField] as TMyJoinedField).JoinedFieldName
-    else
-      KeyField := Tables[AForm.Tag].Fields[ACurField].Name;
+    Parent := Self;
+    KeyField := (Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName;
     ListSource := FDataSource;
+    if FormType = ftEdit then
+    begin
+      ItemIndex := Items.IndexOf(ListViewSQLQuery.Fields.
+      FieldByName((Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName).Value);
+    end;
+  end;
+end;
+
+procedure TEditForm.CreateEdit(ACurField: Integer);
+var
+  FEdit: TEdit;
+begin
+  FEdit := TEdit.Create(Self);
+  with FEdit do
+  begin
+    Visible := True;
+    Width := 250;
+    Left := 110;
+    Height := 23;
+    Top := 5 + 28 * ACurField;
+    Parent := Self;
+    if FormType = ftEdit then
+    begin
+      Text := ListViewSQLQuery.Fields.FieldByName(Tables[CurTable].Fields[ACurField].Name).Value;
+    end;
+  end;
+end;
+
+procedure TEditForm.CreateLable(ACurField: Integer);
+var
+  FLable: TLabel;
+begin
+  FLable := TLabel.Create(Self);
+  with FLable do
+  begin
+    Visible := True;
+    Width := 100;
+    Left := 5;
+    Height := 23;
+    Top := 5 + 28 * ACurField;
+    Parent := Self;
+    if Tables[CurTable].Fields[ACurField] is TMyJoinedField then
+      Text := (Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldCaption
+    else
+      Text := Tables[CurTable].Fields[ACurField].Caption;
   end;
 end;
 

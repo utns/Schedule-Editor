@@ -14,7 +14,8 @@ type
   { TFormListView }
 
   TFormListView = class(TForm)
-    Button1: TButton;
+    ButtonAdd: TButton;
+    ButtonEdit: TButton;
     DataSource: TDataSource;
     DBGrid: TDBGrid;
     DBNavigator: TDBNavigator;
@@ -25,9 +26,11 @@ type
     SpeedButtonAddFilter: TSpeedButton;
     SpeedButtonOK: TSpeedButton;
     SQLQuery: TSQLQuery;
-    procedure Button1Click(Sender: TObject);
+    procedure ButtonAddClick(Sender: TObject);
+    procedure ButtonEditClick(Sender: TObject);
     procedure ButtonAddFilterClick(Sender: TObject);
     procedure CreateNew(AName, ACaption: String; ATag: Integer);
+    //procedure DBGridDblClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SetTableColumns;
@@ -111,9 +114,15 @@ begin
   AddNewFilters;
 end;
 
-procedure TFormListView.Button1Click(Sender: TObject);
+procedure TFormListView.ButtonEditClick(Sender: TObject);
 begin
-  EditForm.CreateNew(Self);
+  //DBGrid.DataSource := Nil;
+  EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
+end;
+
+procedure TFormListView.ButtonAddClick(Sender: TObject);
+begin
+  EditForm.CreateNew(Self.Tag, DataSource, ftAdd, SQLQuery);
 end;
 
 procedure TFormListView.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -268,4 +277,4 @@ begin
 end;
 
 end.
-
+

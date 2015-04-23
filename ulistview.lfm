@@ -1,7 +1,7 @@
 object FormListView: TFormListView
-  Left = 2349
+  Left = 1919
   Height = 577
-  Top = 92
+  Top = 0
   Width = 466
   Caption = 'FormListView'
   ClientHeight = 577
@@ -81,7 +81,7 @@ object FormListView: TFormListView
         DataSource = DataSource
         Options = []
         TabOrder = 0
-        VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast, nbEdit]
+        VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast, nbDelete, nbEdit]
       end
       object SpeedButtonOK: TSpeedButton
         Left = 400
@@ -198,14 +198,23 @@ object FormListView: TFormListView
         ShowHint = True
         ParentShowHint = False
       end
-      object Button1: TButton
-        Left = 227
+      object ButtonEdit: TButton
+        Left = 208
         Height = 25
         Top = 5
-        Width = 75
-        Caption = 'Button1'
-        OnClick = Button1Click
+        Width = 29
+        Caption = 'Edit'
+        OnClick = ButtonEditClick
         TabOrder = 2
+      end
+      object ButtonAdd: TButton
+        Left = 240
+        Height = 25
+        Top = 5
+        Width = 48
+        Caption = 'Add'
+        OnClick = ButtonAddClick
+        TabOrder = 3
       end
     end
   end

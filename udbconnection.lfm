@@ -7,7 +7,7 @@ object DataModuleMain: TDataModuleMain
   object IBConnection: TIBConnection
     Connected = False
     LoginPrompt = False
-    DatabaseName = 'D:\1FBD\final v2\SCHEDULE.FDB'
+    DatabaseName = 'D:\1FBD\final v2\SCHEDULEBD.FDB'
     KeepConnection = False
     Password = 'masterkey'
     Transaction = SQLTransaction

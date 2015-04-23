@@ -234,45 +234,45 @@ end;
 initialization
   with RegisterTable('EducActivities', 'Учебная деятельность') do
   begin
-    //AddNewField('EducID', 'ИД', 35, True);
+    AddNewField('EducID', 'ИД', 35, False);
     AddNewField('EducName', 'Название', 100, True);
   end;
 
   with RegisterTable('Teachers', 'Преподаватели') do
   begin
-    //AddNewField('TeacherID', 'ИД', 35, True);
+    AddNewField('TeacherID', 'ИД', 35, False);
     AddNewField('TeacherInitials', 'Ф.И.О. преподавателя', 250, True);
   end;
 
   with RegisterTable('Groups', 'Группы') do
   begin
-    //AddNewField('GroupID', 'ИД', 35, True);
+    AddNewField('GroupID', 'ИД', 35, False);
     AddNewField('GroupNumber', 'Номер', 55, True);
     AddNewField('GroupName', 'Название группы', 285, True);
   end;
 
   with RegisterTable('Students', 'Студенты') do
   begin
-    //AddNewField('StudentID', 'ИД', 35, True);
+    AddNewField('StudentID', 'ИД', 35, False);
     AddNewField('StudentInitials', 'Ф.И.О. студента', 250, True);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
   end;
 
   with RegisterTable('Subjects', 'Предметы') do
   begin
-    //AddNewField('SubjectID', 'ИД', 35, True);
+    AddNewField('SubjectID', 'ИД', 35, False);
     AddNewField('SubjectName', 'Название предмета', 250, True);
   end;
 
   with RegisterTable('Audiences', 'Аудитории') do
   begin
-    //AddNewField('AudienceID', 'ИД', 35, True);
+    AddNewField('AudienceID', 'ИД', 35, False);
     AddNewField('AudienceNumber', 'Номер', 150, True);
   end;
 
   with RegisterTable('Pairs', 'Пары') do
   begin
-    //AddNewField('PairID', 'ИД', 35, True);
+    AddNewField('PairID', 'ИД', 35, False);
     AddNewField('PairBegin', 'Начало', 55, True);
     AddNewField('PairEnd', 'Конец', 50, True);
     AddNewField('PairNumber', 'Номер', 45, True);
@@ -280,12 +280,13 @@ initialization
 
   with RegisterTable('WeekDays', 'Дни недели') do
   begin
-    //AddNewField('WeekDayID', 'ИД', 35, True);
+    AddNewField('WeekDayID', 'ИД', 35, False);
     AddNewField('WeekDayName', 'Название', 90, True);
   end;
 
   with RegisterTable('Schedules', 'Расписание') do
   begin
+    AddNewField('ScheduleID', 'ИД', 35, False);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
     AddNewField('WeekDayID', 'ИД дня', 75, False, 'WeekDays', 'WeekDayID', 'WeekDayName', 'День недели', 90, True);
     AddNewField('PairID', 'ИД пары', 75, False, 'Pairs', 'PairID', 'PairNumber', '№ пары', 55, True);
@@ -297,12 +298,14 @@ initialization
 
   with RegisterTable('Teachers_Subjects', 'Предметы преподавателя') do
   begin
+    AddNewField('ID', 'ИД', 35, False);
     AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
     AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
   end;
 
   with RegisterTable('Group_Subjects', 'Предметы групп') do
   begin
+    AddNewField('ID', 'ИД', 35, False);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
     AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
   end;

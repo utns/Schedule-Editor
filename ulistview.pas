@@ -41,6 +41,7 @@ type
     procedure SpeedButtonOKClick(Sender: TObject);
     function CreateSqlFilter: String;
     procedure SetParams;
+    procedure SQLQueryAfterOpen(DataSet: TDataSet);
   private
     Filters: array of TPanelFilter;
     CurSortColumn: Integer;
@@ -274,6 +275,11 @@ begin
         SQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
       end;
     end;
+end;
+
+procedure TFormListView.SQLQueryAfterOpen(DataSet: TDataSet);
+begin
+  SetTableColumns;
 end;
 
 end.

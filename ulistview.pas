@@ -14,9 +14,6 @@ type
   { TFormListView }
 
   TFormListView = class(TForm)
-    ButtonDelete: TButton;
-    ButtonAdd: TButton;
-    ButtonEdit: TButton;
     DataSource: TDataSource;
     DBGrid: TDBGrid;
     DBNavigator: TDBNavigator;
@@ -24,12 +21,12 @@ type
     PairSplitterSide1: TPairSplitterSide;
     PairSplitterSide2: TPairSplitterSide;
     ScrollBox: TScrollBox;
+    SpeedButtonDelete: TSpeedButton;
+    SpeedButtonEdit: TSpeedButton;
+    SpeedButtonAdd: TSpeedButton;
     SpeedButtonAddFilter: TSpeedButton;
     SpeedButtonOK: TSpeedButton;
     SQLQuery: TSQLQuery;
-    procedure ButtonAddClick(Sender: TObject);
-    procedure ButtonDeleteClick(Sender: TObject);
-    procedure ButtonEditClick(Sender: TObject);
     procedure ButtonAddFilterClick(Sender: TObject);
     constructor Create(AName, ACaption: String; ATag: Integer);
     procedure DBGridCellClick(Column: TColumn);
@@ -38,9 +35,12 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SetTableColumns;
     procedure AddNewFilters;
+    procedure SpeedButtonAddClick(Sender: TObject);
     procedure SpeedButtonAddFilterClick(Sender: TObject);
     procedure ButtonDeleteFilterMouseUp(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure SpeedButtonDeleteClick(Sender: TObject);
+    procedure SpeedButtonEditClick(Sender: TObject);
     procedure SpeedButtonOKClick(Sender: TObject);
     function CreateSqlFilter: String;
     procedure SetParams;
@@ -129,25 +129,6 @@ begin
   AddNewFilters;
 end;
 
-procedure TFormListView.ButtonEditClick(Sender: TObject);
-begin
-  EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
-end;
-
-procedure TFormListView.ButtonAddClick(Sender: TObject);
-begin
-  EditForm.CreateNew(Self.Tag, DataSource, ftAdd, SQLQuery);
-end;
-
-procedure TFormListView.ButtonDeleteClick(Sender: TObject);
-var
-  ButtonSelected: Integer;
-begin
-  ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
-  if ButtonSelected = mrYes then
-    DeleteSQL;
-end;
-
 procedure TFormListView.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   CloseAction := caFree;
@@ -189,6 +170,11 @@ begin
     Filters[High(Filters)].FSBDeleteFilter.FBitBtnDelete.OnMouseUp := @ButtonDeleteFilterMouseUp;
 end;
 
+procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
+begin
+  EditForm.CreateNew(Self.Tag, DataSource, ftAdd, SQLQuery);
+end;
+
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
 begin
   AddNewFilters;
@@ -209,6 +195,20 @@ begin
   end;
   SetLength(Filters, Length(Filters) - 1);
   SpeedButtonOK.Down := False;
+end;
+
+procedure TFormListView.SpeedButtonDeleteClick(Sender: TObject);
+var
+  ButtonSelected: Integer;
+begin
+  ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
+  if ButtonSelected = mrYes then
+    DeleteSQL;
+end;
+
+procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
+begin
+  EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
@@ -309,8 +309,7 @@ begin
     begin
       s := SQL.Text;
       Close;
-      SQL.Clear;
-      SQL.AddStrings('DELETE FROM ' + Tables[Self.Tag].Name + ' WHERE ' + Tables[Self.Tag].Fields[0].Name + ' = ' + id + ';');
+      SQL.Text := Format('DELETE FROM %s WHERE %s = %s;', [Tables[Self.Tag].Name, Tables[Self.Tag].Fields[0].Name, id]);
       ExecSQL;
       DataModuleMain.SQLTransaction.Commit;
       SQL.Clear;
@@ -319,7 +318,11 @@ begin
     end;
   except
     on E: EDatabaseError do
-      MessageDlg('Нельзя удалить внешний ключ ', mtError, [mbOK], 0)
+    begin
+      MessageDlg('Нельзя удалить внешний ключ.', mtError, [mbOK], 0);
+      SQLQuery.SQL.Text := s;
+      OpenSQLQuery;
+    end;
   end;
 
 

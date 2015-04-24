@@ -195,8 +195,6 @@ begin
 end;
 
 function TMyTable.SqlOrderBy(ASortColumn, ATypeSort: Integer): String;
-var
-  i: Integer;
 begin
   if (ASortColumn >= 0) and (ATypeSort > 0) then
   begin
@@ -282,6 +280,7 @@ initialization
   begin
     AddNewField('WeekDayID', 'ИД', 35, False);
     AddNewField('WeekDayName', 'Название', 90, True);
+    AddNewField('WeekDayNumber', 'Номер', 60, True);
   end;
 
   with RegisterTable('Schedules', 'Расписание') do

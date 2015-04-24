@@ -75,6 +75,9 @@ CREATE TABLE Group_Subjects
 	SubjectID INTEGER
 );
 
+CREATE SEQUENCE MainSequence;
+ALTER SEQUENCE MainSequence RESTART WITH 705;
+
 INSERT INTO EducActivities VALUES (1, 'Лекция');
 INSERT INTO EducActivities VALUES (2, 'Практика');
 

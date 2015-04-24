@@ -29,7 +29,8 @@ type
     procedure SQLUpdate;
     function GetNewID: String;
     function GetCBItemID(ADBLookupCB: TDBLookupComboBox): Integer;
-    procedure CreateSQL(AQuery: String);
+    procedure ApplyQuery(AQuery: String);
+    function IsEqualValues(ATag: Integer): Boolean;
     function IsEmptyFields: Boolean;
   private
     ListViewDataSource: TDataSource;
@@ -69,6 +70,7 @@ begin
     CurTable := ACurTable;
     FormType := AFormType;
     Tag := ACurTable;
+    Caption := 'Карточка';
     for i := 1 to Tables[ACurTable].FieldsCount - 1 do
     begin
       if Tables[ACurTable].Fields[i] is TMyJoinedField then
@@ -85,23 +87,19 @@ begin
     Height := BitBtnCancel.Top + BitBtnCancel.Height + 5;
     ShowModal;
   end;
-
-
-
 end;
 
 procedure TEditForm.BitBtnSaveClick(Sender: TObject);
 begin
   if IsEmptyFields then
   begin
-    MessageDlg('Заполните пустые поля.', mtError, [mbOK], 0);
+    MessageDlg('Заполните пустые поля.', mtError, [mbNo], 0);
     Exit;
   end;
   if FormType = ftAdd then
     SQLInsert
   else
     SQLUpdate;
-  //MainSQLQuery.ApplyUpdates;
   Close;
   DataModuleMain.SQLTransaction.Commit;
   EActivateSQL;
@@ -144,6 +142,7 @@ begin
     Tag := ACurField;
     Top := -23 + 28 * ACurField;
     Parent := Self;
+    ReadOnly := True;
     KeyField := (Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName;
     ListSource := FDataSource;
     if FormType = ftEdit then
@@ -206,36 +205,64 @@ var
   i: Integer;
   s: String;
 begin
-  s := 'INSERT INTO ' + Tables[CurTable].Name + ' VALUES (' + GetNewID;
+  s := Format('INSERT INTO %s VALUES (%s', [Tables[CurTable].Name, GetNewID]);
   for i := 0 to High(Editors) do
     s += ', :p' + IntToStr(i);
   s += ');';
-  CreateSQL(s);
+  ApplyQuery(s);
 end;
 
 procedure TEditForm.SQLUpdate;
 var
   i: integer;
   s: string;
+  ChangedField: Boolean;
 begin
-  s := 'UPDATE ' + Tables[CurTable].Name + ' SET ' + Tables[CurTable].Fields[1].Name + ' = :p1';
-  for i := 2 to Tables[CurTable].FieldsCount - 1 do
-    s += ', ' + Tables[CurTable].Fields[i].Name + ' = :p' + IntToStr(i);
-  s += ' WHERE ' + Tables[CurTable].Fields[0].Name + ' = '
-    +  IntToStr(ListViewSQLQuery.Fields.FieldByName(Tables[CurTable].Fields[0].Name).Value);
-  CreateSQL(s);
+  ChangedField := False;
+  s := 'UPDATE ' + Tables[CurTable].Name + ' SET';
+  for i := 1 to Tables[CurTable].FieldsCount - 1 do
+    if  not IsEqualValues(i) then
+    begin
+      s +=  Format(' %s = :p%d ,', [Tables[CurTable].Fields[i].Name, i]);
+      ChangedField := True;
+    end;
+  Delete(s, Length(s), 1);
+  s += Format(' WHERE %s = %s' , [Tables[CurTable].Fields[0].Name,
+    ListViewSQLQuery.Fields.FieldByName(Tables[CurTable].Fields[0].Name).Value]);
+
+  if ChangedField then
+    with MainSQLQuery do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.AddStrings(s);
+      for i := 0 to High(Editors) do
+        if not IsEqualValues(i + 1) then
+          if Editors[i] is TEdit then
+            ParamByName('p' + IntToStr(i + 1)).AsString := (Editors[i] as TEdit).Text
+          else
+            ParamByName('p' + IntToStr(i + 1)).AsInteger :=  GetCBItemID((Editors[i] as TDBLookupComboBox));
+      ExecSQL;
+    end;
 end;
 
 function TEditForm.GetNewID: String;
 begin
   with MainSQLQuery do
   begin
+    Close;
+    SQL.Text := 'SELECT NEXT VALUE FOR MainSequence FROM RDB$DATABASE;';
+    Open;
+    Result := Fields[0].AsString;
+  end;
+  {with MainSQLQuery do
+  begin
     SQL.Clear;
     SQL.AddStrings(Format('SELECT MAX(%s) FROM %s', [Tables[CurTable].Fields[0].Name,
       Tables[CurTable].Name]));
     Open;
     Result := IntToStr(Fields[0].AsInteger + 1);
-  end;
+  end;}
 end;
 
 function TEditForm.GetCBItemID(ADBLookupCB: TDBLookupComboBox): Integer;
@@ -252,18 +279,16 @@ begin
   begin
     DataBase := DataModuleMain.IBConnection;
     Transaction := DataModuleMain.SQLTransaction;
-    SQL.Clear;
-    SQL.AddStrings(Format('SELECT first 1 skip %d %s FROM %s', [ADBLookupCB.ItemIndex,
+    SQL.Text := Format('SELECT first 1 skip %d %s FROM %s', [ADBLookupCB.ItemIndex,
       (Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedField,
-      (Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedTable]));
+      (Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedTable]);
     Open;
     Result := Fields[0].AsInteger;
-    ShowMessage(IntToStr(Result));
     Free;
   end;
 end;
 
-procedure TEditForm.CreateSQL(AQuery: String);
+procedure TEditForm.ApplyQuery(AQuery: String);
 var
   i: Integer;
 begin
@@ -281,10 +306,28 @@ begin
   end;
 end;
 
+function TEditForm.IsEqualValues(ATag: Integer): Boolean;
+begin
+  Result := False;
+    if Editors[ATag - 1] is TEdit then
+    begin
+      if (Editors[ATag - 1] as TEdit).Text = ListViewSQLQuery.Fields.FieldByName(Tables[CurTable].Fields[ATag].Name).Value then
+      begin
+        Result := True;
+      end;
+    end else
+      if (Editors[ATag - 1] as TDBLookupComboBox).Items[(Editors[ATag - 1] as TDBLookupComboBox).ItemIndex] =
+        ListViewSQLQuery.Fields.FieldByName((Tables[CurTable].Fields[ATag] as TMyJoinedField).JoinedFieldName).Value then
+      begin
+        Result := True;
+      end;
+end;
+
 function TEditForm.IsEmptyFields: Boolean;
 var
   i: Integer;
 begin
+  Result := False;
   for i := 0 to High(Editors) do
     if Editors[i] is TEdit then
     begin

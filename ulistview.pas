@@ -31,8 +31,7 @@ type
     procedure ButtonDeleteClick(Sender: TObject);
     procedure ButtonEditClick(Sender: TObject);
     procedure ButtonAddFilterClick(Sender: TObject);
-    procedure CreateNew(AName, ACaption: String; ATag: Integer);
-    //procedure DBGridDblClick(Sender: TObject);
+    constructor Create(AName, ACaption: String; ATag: Integer);
     procedure DBGridTitleClick(Column: TColumn);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SetTableColumns;
@@ -43,8 +42,8 @@ type
     procedure SpeedButtonOKClick(Sender: TObject);
     function CreateSqlFilter: String;
     procedure SetParams;
-    procedure SQLQueryAfterOpen(DataSet: TDataSet);
     procedure DeleteSQL;
+    procedure OpenSQLQuery;
   private
     Filters: array of TPanelFilter;
     CurSortColumn: Integer;
@@ -63,13 +62,14 @@ implementation
 
 { TFormListView }
 
-procedure TFormListView.CreateNew(AName, ACaption: String; ATag: Integer);
+constructor TFormListView.Create(AName, ACaption: String; ATag: Integer);
 var
   AForm: TFormListView;
 begin
-  AForm := TFormListView.Create(Application);
+  Inherited Create(Application);
+  {AForm := TFormListView.Create(Application);
   with AForm do
-  begin
+  begin }
     Caption := ACaption;
     Name := AName;
     Tag := ATag;
@@ -82,7 +82,7 @@ begin
     Show;
     CurSortType := 0;
     CurSortColumn := -1;
-  end;
+  //end;
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
@@ -289,11 +289,6 @@ begin
     end;
 end;
 
-procedure TFormListView.SQLQueryAfterOpen(DataSet: TDataSet);
-begin
-  SetTableColumns;
-end;
-
 procedure TFormListView.DeleteSQL;
 var
   s, id: String;
@@ -304,14 +299,20 @@ begin
     s := SQL.Text;
     Close;
     SQL.Clear;
-    SQL.AddStrings('DELETE FROM ' + Tables[Self.Tag].Name + ' WHERE ' + Tables[Self.Tag].Fields[0].Name + ' = ' + id + ';' );
-    DataModuleMain.SQLTransaction.Commit;
+    SQL.AddStrings('DELETE FROM ' + Tables[Self.Tag].Name + ' WHERE ' + Tables[Self.Tag].Fields[0].Name + ' = ' + id + ';');
     ExecSQL;
+    DataModuleMain.SQLTransaction.Commit;
     SQL.Clear;
     SQL.AddStrings(s);
-    Open;
+    ReactivateSQL;
   end;
 
+end;
+
+procedure TFormListView.OpenSQLQuery;
+begin
+  SQLQuery.Open;
+  SetTableColumns;
 end;
 
 end.

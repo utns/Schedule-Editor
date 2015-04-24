@@ -229,7 +229,6 @@ object FormListView: TFormListView
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>
-    AfterOpen = SQLQueryAfterOpen
     Database = DataModuleMain.IBConnection
     Transaction = DataModuleMain.SQLTransaction
     SQL.Strings = (

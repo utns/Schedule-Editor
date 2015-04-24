@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  DbCtrls, UMetadata, sqldb, UListView, UAbout;
+  DbCtrls, UMetadata, sqldb, UListView, UAbout, UEditForm;
 
 type
 
@@ -22,7 +22,10 @@ type
     procedure MenuItemAboutClick(Sender: TObject);
     procedure MenuItemClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
+    function IsFormOpen(AName: String): Boolean;
+    procedure ActivateSQL;
   private
+    ListViewForms: array of TFormListView;
     { private declarations }
   public
     { public declarations }
@@ -35,20 +38,6 @@ var
 
 implementation
 
-function IsFormOpen(AName: String): Boolean;
-var
-  i: Integer;
-begin
-  Result := False;
-  for i := 0 To Screen.FormCount - 1 do
-    if (Screen.Forms[i].Name = AName) then
-    begin
-      Result := True;
-      Screen.Forms[i].ShowOnTop;
-      Break;
-    end;
-end;
-
 {$R *.lfm}
 
 { TMainForm }
@@ -59,6 +48,7 @@ var
 begin
   for i := 0 to High(Tables) do
     AddReferenceItem(Tables[i].Name, Tables[i].Caption, i);
+  ReactivateSQL := @ActivateSQL;
 end;
 
 procedure TMainForm.AddReferenceItem(AName, ACaption: String; ATag: Integer);
@@ -81,7 +71,11 @@ end;
 procedure TMainForm.MenuItemClick(Sender: TObject);
 begin
   if not(IsFormOpen((Sender as TMenuItem).Name)) then
-    FormListView.CreateNew((Sender as TMenuItem).Name, (Sender as TMenuItem).Caption, (Sender as TMenuItem).Tag);
+  begin
+    SetLength(ListViewForms, Length(ListViewForms) + 1);
+    with (Sender as TMenuItem) do
+      ListViewForms[High(ListViewForms)] := TFormListView.Create(Name, Caption, Tag);
+  end;
 end;
 
 procedure TMainForm.MenuItemExitClick(Sender: TObject);
@@ -90,6 +84,28 @@ begin
     MainForm.Close;
 end;
 
+function TMainForm.IsFormOpen(AName: String): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 To High(ListViewForms) do
+    if (ListViewForms[i].Name = AName) then
+    begin
+      Result := True;
+      ListViewForms[i].ShowOnTop;
+      Break;
+    end;
+end;
+
+procedure TMainForm.ActivateSQL;
+var
+  i: Integer;
+begin
+  for i := 0 to High(ListViewForms) do
+    ListViewForms[i].OpenSQLQuery;
+end;
+
 
 end.
-
+

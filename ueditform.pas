@@ -40,8 +40,12 @@ type
     { public declarations }
   end;
 
+type
+  TEvent = procedure of object;
+
 var
   EditForm: TEditForm;
+  ReactivateSQL: TEvent;
 
 implementation
 
@@ -89,7 +93,8 @@ begin
     SQLUpdate;
   Close;
   DataModuleMain.SQLTransaction.Commit;
-  ListViewSQLQuery.Open;
+  ReactivateSQL;
+  //ListViewSQLQuery.Open;
 end;
 
 procedure TEditForm.CreateCB(ACurField: Integer);
@@ -228,7 +233,8 @@ begin
     DataBase := DataModuleMain.IBConnection;
     Transaction := DataModuleMain.SQLTransaction;
     SQL.Clear;
-    SQL.AddStrings(Format('SELECT first 1 skip %d %s FROM %s', [ADBLookupCB.ItemIndex ,(Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedField,
+    SQL.AddStrings(Format('SELECT first 1 skip %d %s FROM %s', [ADBLookupCB.ItemIndex,
+      (Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedField,
       (Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedTable]));
     Open;
     Result := Fields[0].AsInteger;

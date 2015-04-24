@@ -32,6 +32,8 @@ type
     procedure ButtonEditClick(Sender: TObject);
     procedure ButtonAddFilterClick(Sender: TObject);
     constructor Create(AName, ACaption: String; ATag: Integer);
+    procedure DBGridCellClick(Column: TColumn);
+    procedure DBGridDblClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SetTableColumns;
@@ -48,6 +50,7 @@ type
     Filters: array of TPanelFilter;
     CurSortColumn: Integer;
     CurSortType: Integer;
+    CellDblClick: Boolean;
     { private declarations }
   public
     { public declarations }
@@ -67,26 +70,34 @@ var
   AForm: TFormListView;
 begin
   Inherited Create(Application);
-  {AForm := TFormListView.Create(Application);
-  with AForm do
-  begin }
-    Caption := ACaption;
-    Name := AName;
-    Tag := ATag;
-    SQLQuery.Close;
-    SQLQuery.SQL.Clear;
-    SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery(-1, -1, ''));
-    SQLQuery.Open;
-    SetTableColumns;
-    AddNewFilters;
-    Show;
-    CurSortType := 0;
-    CurSortColumn := -1;
-  //end;
+  Caption := ACaption;
+  Name := AName;
+  Tag := ATag;
+  SQLQuery.Close;
+  SQLQuery.SQL.Clear;
+  SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery(-1, -1, ''));
+  SQLQuery.Open;
+  SetTableColumns;
+  AddNewFilters;
+  Show;
+  CurSortType := 0;
+  CurSortColumn := -1;
+end;
+
+procedure TFormListView.DBGridCellClick(Column: TColumn);
+begin
+  CellDblClick := True;
+end;
+
+procedure TFormListView.DBGridDblClick(Sender: TObject);
+begin
+  if CellDblClick then
+    EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
 begin
+  CellDblClick := False;
   Mouse.CursorPos := Point(Mouse.CursorPos.x + 1, Mouse.CursorPos.y);
   if (CurSortColumn <> Column.Index) and (CurSortColumn <> -1) then
   begin
@@ -120,7 +131,6 @@ end;
 
 procedure TFormListView.ButtonEditClick(Sender: TObject);
 begin
-  //DBGrid.DataSource := Nil;
   EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
 end;
 
@@ -293,19 +303,25 @@ procedure TFormListView.DeleteSQL;
 var
   s, id: String;
 begin
-  id := IntToStr(SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value);
-  with SQLQuery do
-  begin
-    s := SQL.Text;
-    Close;
-    SQL.Clear;
-    SQL.AddStrings('DELETE FROM ' + Tables[Self.Tag].Name + ' WHERE ' + Tables[Self.Tag].Fields[0].Name + ' = ' + id + ';');
-    ExecSQL;
-    DataModuleMain.SQLTransaction.Commit;
-    SQL.Clear;
-    SQL.AddStrings(s);
-    ReactivateSQL;
+  try
+    id := IntToStr(SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value);
+    with SQLQuery do
+    begin
+      s := SQL.Text;
+      Close;
+      SQL.Clear;
+      SQL.AddStrings('DELETE FROM ' + Tables[Self.Tag].Name + ' WHERE ' + Tables[Self.Tag].Fields[0].Name + ' = ' + id + ';');
+      ExecSQL;
+      DataModuleMain.SQLTransaction.Commit;
+      SQL.Clear;
+      SQL.AddStrings(s);
+      EActivateSQL;
+    end;
+  except
+    on E: EDatabaseError do
+      MessageDlg('Нельзя удалить внешний ключ ', mtError, [mbOK], 0)
   end;
+
 
 end;
 

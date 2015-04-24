@@ -48,7 +48,7 @@ var
 begin
   for i := 0 to High(Tables) do
     AddReferenceItem(Tables[i].Name, Tables[i].Caption, i);
-  ReactivateSQL := @ActivateSQL;
+ EActivateSQL := @ActivateSQL;
 end;
 
 procedure TMainForm.AddReferenceItem(AName, ACaption: String; ATag: Integer);

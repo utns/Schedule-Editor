@@ -19,6 +19,7 @@ type
     BitBtnSave: TBitBtn;
     MainDataSource: TDataSource;
     MainSQLQuery: TSQLQuery;
+    procedure BitBtnCancelClick(Sender: TObject);
     procedure BitBtnSaveClick(Sender: TObject);
     procedure  CreateNew(ACurTable: Integer; ADataSource: TDataSource; AFormType: TFormType; ASQLQuery: TSQLQuery);
     procedure CreateCB(ACurField: Integer);
@@ -29,6 +30,7 @@ type
     function GetNewID: String;
     function GetCBItemID(ADBLookupCB: TDBLookupComboBox): Integer;
     procedure CreateSQL(AQuery: String);
+    function IsEmptyFields: Boolean;
   private
     ListViewDataSource: TDataSource;
     ListViewSQLQuery: TSQLQuery;
@@ -45,7 +47,7 @@ type
 
 var
   EditForm: TEditForm;
-  ReactivateSQL: TEvent;
+  EActivateSQL: TEvent;
 
 implementation
 
@@ -78,7 +80,10 @@ begin
         if Tables[ACurTable].Fields[i].Visible then
           CreateEdit(i);
     end;
-    Show;
+    BitBtnSave.Top := 5 + 28 * i;
+    BitBtnCancel.Top := 5 + 28 * i;
+    Height := BitBtnCancel.Top + BitBtnCancel.Height + 5;
+    ShowModal;
   end;
 
 
@@ -87,14 +92,24 @@ end;
 
 procedure TEditForm.BitBtnSaveClick(Sender: TObject);
 begin
+  if IsEmptyFields then
+  begin
+    MessageDlg('Заполните пустые поля.', mtError, [mbOK], 0);
+    Exit;
+  end;
   if FormType = ftAdd then
     SQLInsert
   else
     SQLUpdate;
+  //MainSQLQuery.ApplyUpdates;
   Close;
   DataModuleMain.SQLTransaction.Commit;
-  ReactivateSQL;
-  //ListViewSQLQuery.Open;
+  EActivateSQL;
+end;
+
+procedure TEditForm.BitBtnCancelClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TEditForm.CreateCB(ACurField: Integer);
@@ -134,7 +149,7 @@ begin
     if FormType = ftEdit then
     begin
       ItemIndex := Items.IndexOf(ListViewSQLQuery.Fields.
-      FieldByName((Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName).Value);
+        FieldByName((Tables[CurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName).Value);
     end;
   end;
   SetLength(Editors, Length(Editors) + 1);
@@ -227,6 +242,11 @@ function TEditForm.GetCBItemID(ADBLookupCB: TDBLookupComboBox): Integer;
 var
   FSQLQuery: TSQLQuery;
 begin
+  if ADBLookupCB.ItemIndex = -1 then
+  begin
+    Result := -1;
+    Exit;
+  end;
   FSQLQuery := TSQLQuery.Create(Self);
   with FSQLQuery do
   begin
@@ -238,6 +258,7 @@ begin
       (Tables[CurTable].Fields[ADBLookupCB.Tag] as TMyJoinedField).ReferencedTable]));
     Open;
     Result := Fields[0].AsInteger;
+    ShowMessage(IntToStr(Result));
     Free;
   end;
 end;
@@ -258,6 +279,26 @@ begin
         Params[i].AsInteger :=  GetCBItemID((Editors[i] as TDBLookupComboBox));
     ExecSQL;
   end;
+end;
+
+function TEditForm.IsEmptyFields: Boolean;
+var
+  i: Integer;
+begin
+  for i := 0 to High(Editors) do
+    if Editors[i] is TEdit then
+    begin
+      if (Editors[i] as TEdit).Text = '' then
+      begin
+        Result := True;
+        Exit;
+      end
+    end else
+      if GetCBItemID((Editors[i] as TDBLookupComboBox)) = -1 then
+      begin
+        Result := True;
+        Exit;
+      end;
 end;
 
 end.

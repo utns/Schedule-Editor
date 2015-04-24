@@ -1,59 +1,66 @@
 CREATE DATABASE 'D:\1FBD\final v2\ScheduleBD.fdb' user 'SYSDBA' password 'masterkey' DEFAULT CHARACTER SET WIN1251;
 CREATE TABLE EducActivities
 (
-    EducID   INTEGER, 
+    EducID   INTEGER PRIMARY KEY, 
     EducName VARCHAR (100) 
 );
 CREATE TABLE Teachers
 ( 
-	TeacherID       INTEGER ,
+	TeacherID       INTEGER PRIMARY KEY,
 	TeacherInitials VARCHAR (100)
 );
 CREATE TABLE Groups
 (
-	GroupID     INTEGER ,
+	GroupID     INTEGER PRIMARY KEY,
 	GroupNumber VARCHAR (100) ,
 	GroupName   VARCHAR (100)  
 );
 CREATE TABLE Students
 ( 
-	StudentID       INTEGER ,
+	StudentID       INTEGER PRIMARY KEY,
 	StudentInitials VARCHAR (100) ,
 	GroupID         INTEGER 
 );
 CREATE TABLE Subjects
 ( 
-	SubjectID   INTEGER ,
+	SubjectID   INTEGER PRIMARY KEY,
     SubjectName VARCHAR (100) 
 );
 CREATE TABLE Audiences
 (
-    AudienceID     INTEGER ,
+    AudienceID     INTEGER PRIMARY KEY,
 	AudienceNumber VARCHAR (100)  
 );
 CREATE TABLE Pairs
 (
-	PairID     INTEGER ,
+	PairID     INTEGER PRIMARY KEY,
 	PairBegin  VARCHAR (100) ,
 	PairEnd    VARCHAR (100) ,
 	PairNumber INTEGER  
 );
 CREATE TABLE WeekDays
 (
-	WeekDayID     INTEGER ,
+	WeekDayID     INTEGER PRIMARY KEY,
 	WeekDayName   VARCHAR (100) , 
 	WeekDayNumber INTEGER  
 );
 CREATE TABLE Schedules
 (
-	ScheduleID INTEGER ,
-	GroupID    INTEGER ,
-	WeekDayID  INTEGER ,
-	PairID     INTEGER ,
-	SubjectID  INTEGER ,
-	EducID     INTEGER ,
-	TeacherID  INTEGER ,
-	AudienceID INTEGER 
+	ScheduleID INTEGER  PRIMARY KEY,
+	GroupID    INTEGER,
+	WeekDayID  INTEGER,
+	PairID     INTEGER,
+	SubjectID  INTEGER,
+	EducID     INTEGER,
+	TeacherID  INTEGER,
+	AudienceID INTEGER,
+	FOREIGN KEY (GroupID)    REFERENCES Groups(GroupID),
+    FOREIGN KEY (WeekDayID)  REFERENCES WeekDays(WeekDayID),
+    FOREIGN KEY (PairID)     REFERENCES Pairs(PairID),
+	FOREIGN KEY (SubjectID)  REFERENCES Subjects(SubjectID),
+	FOREIGN KEY (EducID)     REFERENCES EducActivities(EducID),
+	FOREIGN KEY (TeacherID)  REFERENCES Teachers(TeacherID),
+	FOREIGN KEY (AudienceID) REFERENCES Audiences(AudienceID)
 );
 CREATE TABLE Teachers_Subjects
 (

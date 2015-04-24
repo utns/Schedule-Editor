@@ -38,6 +38,7 @@ object FormListView: TFormListView
         Top = 0
         Width = 466
         Anchors = [akTop, akLeft, akRight, akBottom]
+        AutoEdit = False
         BorderSpacing.Bottom = 5
         Color = clWindow
         Columns = <>
@@ -45,6 +46,8 @@ object FormListView: TFormListView
         Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
         TabOrder = 0
         TitleImageList = DataModuleMain.ImageList
+        OnCellClick = DBGridCellClick
+        OnDblClick = DBGridDblClick
         OnTitleClick = DBGridTitleClick
       end
     end
@@ -81,7 +84,7 @@ object FormListView: TFormListView
         DataSource = DataSource
         Options = []
         TabOrder = 0
-        VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast, nbDelete, nbEdit]
+        VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast]
       end
       object SpeedButtonOK: TSpeedButton
         Left = 400

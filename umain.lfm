@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 2058
+  Left = 2031
   Height = 20
-  Top = 701
+  Top = 599
   Width = 230
   Caption = 'Расписание'
   Constraints.MaxHeight = 20

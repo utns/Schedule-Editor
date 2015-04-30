@@ -66,8 +66,6 @@ implementation
 { TFormListView }
 
 constructor TFormListView.Create(AName, ACaption: String; ATag: Integer);
-var
-  AForm: TFormListView;
 begin
   Inherited Create(Application);
   Caption := ACaption;
@@ -92,7 +90,7 @@ end;
 procedure TFormListView.DBGridDblClick(Sender: TObject);
 begin
   if CellDblClick then
-    EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
+    EditForm.CreateNew(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
@@ -172,7 +170,7 @@ end;
 
 procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
 begin
-  EditForm.CreateNew(Self.Tag, DataSource, ftAdd, SQLQuery);
+  EditForm.CreateNew(Self.Tag, ftAdd, 0);
 end;
 
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
@@ -208,7 +206,7 @@ end;
 
 procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
 begin
-  EditForm.CreateNew(Self.Tag, DataSource, ftEdit, SQLQuery);
+  EditForm.CreateNew(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);

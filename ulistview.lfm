@@ -1,5 +1,5 @@
 object FormListView: TFormListView
-  Left = 1919
+  Left = 1920
   Height = 577
   Top = 0
   Width = 466
@@ -284,6 +284,8 @@ object FormListView: TFormListView
           0000000000000000000000000000000000000000000000000000
         }
         OnClick = SpeedButtonAddClick
+        ShowHint = True
+        ParentShowHint = False
       end
       object SpeedButtonEdit: TSpeedButton
         Left = 240
@@ -368,6 +370,8 @@ object FormListView: TFormListView
           8900006E8704006E880000000000000000000000000000000000
         }
         OnClick = SpeedButtonEditClick
+        ShowHint = True
+        ParentShowHint = False
       end
       object SpeedButtonDelete: TSpeedButton
         Left = 280
@@ -452,6 +456,8 @@ object FormListView: TFormListView
           0000000000000000000000000000000000000000000000000000
         }
         OnClick = SpeedButtonDeleteClick
+        ShowHint = True
+        ParentShowHint = False
       end
     end
   end

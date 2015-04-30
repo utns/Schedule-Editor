@@ -9,6 +9,8 @@ uses
 
 type
 
+  TFormType = (ftDelete, ftEdit, ftAdd);
+
   { TMyField }
 
   TMyField = class

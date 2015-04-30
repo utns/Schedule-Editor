@@ -46,8 +46,10 @@ type
     procedure SetParams;
     procedure DeleteSQL;
     procedure OpenSQLQuery;
+    //procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
   private
     Filters: array of TPanelFilter;
+    EditForms: array of TEditForm;
     CurSortColumn: Integer;
     CurSortType: Integer;
     CellDblClick: Boolean;
@@ -56,8 +58,12 @@ type
     { public declarations }
   end;
 
+type
+  TEventCreateNewEditForm = procedure(ACurTable: Integer; AFormType: TFormType; AID: Integer) of object;
+
 var
   FormListView: TFormListView;
+  ECreateNewEditForm: TEventCreateNewEditForm;
 
 implementation
 
@@ -90,7 +96,7 @@ end;
 procedure TFormListView.DBGridDblClick(Sender: TObject);
 begin
   if CellDblClick then
-    EditForm.CreateNew(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
+    ECreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
@@ -170,7 +176,7 @@ end;
 
 procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
 begin
-  EditForm.CreateNew(Self.Tag, ftAdd, 0);
+  ECreateNewEditForm(Self.Tag, ftAdd, 0);
 end;
 
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
@@ -206,7 +212,7 @@ end;
 
 procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
 begin
-  EditForm.CreateNew(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
+  ECreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
@@ -322,8 +328,6 @@ begin
       OpenSQLQuery;
     end;
   end;
-
-
 end;
 
 procedure TFormListView.OpenSQLQuery;
@@ -331,6 +335,13 @@ begin
   SQLQuery.Open;
   SetTableColumns;
 end;
+
+{procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
+  AFormType: TFormType; AID: Integer);
+begin
+  SetLength(EditForms, Length(EditForms) + 1);
+  EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
+end; }
 
 end.
 

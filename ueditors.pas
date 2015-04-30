@@ -18,6 +18,7 @@ type
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer);
     function GetValue: String; virtual;
     function GetText: String; virtual;
+    procedure Refresh; virtual;
   end;
 
   { TMyLookupCB }
@@ -26,11 +27,17 @@ type
   private
     FDBLookupComboBox: TDBLookupComboBox;
     FStringList: TStringList;
+    FSQLQuery: TSQLQuery;
+    FDataSource: TDataSource;
+    FCurTable: Integer;
+    procedure CreateSQLQueryAndDataSource(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer);
+    procedure CreateStringList;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer;
       AFormType: TFormType; ASourceSQLQuery: TSQLQuery);
     function GetValue: String; override;
     function GetText: String; override;
+    procedure Refresh; override;
   end;
 
   { TMyEdit }
@@ -112,17 +119,52 @@ begin
 
 end;
 
+procedure TMainEditor.Refresh;
+begin
+
+end;
+
 { TMyLookupCB }
+
+procedure TMyLookupCB.CreateSQLQueryAndDataSource(AWinControl: TWinControl;
+  ACurTable: Integer; ACurField: Integer);
+begin
+  FSQLQuery := TSQLQuery.Create(AWinControl);
+  with FSQLQuery do
+  begin
+    DataBase := DataModuleMain.IBConnection;
+    Transaction := DataModuleMain.SQLTransaction;
+    SQL.Clear;
+    SQL.AddStrings(Format('SELECT %s, %s FROM %s', [(Tables[ACurTable].Fields[ACurField] as TMyJoinedField).ReferencedField,
+      (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName,
+      (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).ReferencedTable]));
+    Open;
+  end;
+  FDataSource := TDataSource.Create(AWinControl);
+  FDataSource.DataSet := FSQLQuery;
+end;
+
+procedure TMyLookupCB.CreateStringList;
+var
+  i: Integer;
+begin
+  FStringList := TStringList.Create;
+  for i := 0 to FSQLQuery.RecordCount - 1 do
+  begin
+    FStringList.Add(FSQLQuery.Fields.FieldByNumber(1).Value);
+    FSQLQuery.Next;
+  end;
+end;
 
 constructor TMyLookupCB.Create(AWinControl: TWinControl; ACurTable: Integer;
   ACurField: Integer; AFormType: TFormType; ASourceSQLQuery: TSQLQuery);
 var
-  FSQLQuery: TSQLQuery;
-  FDataSource: TDataSource;
   i: Integer;
 begin
   inherited Create(AWinControl, ACurTable, ACurField);
-  FSQLQuery := TSQLQuery.Create(AWinControl);
+  CreateSQLQueryAndDataSource(AWinControl, ACurTable, ACurField);
+
+  {FSQLQuery := TSQLQuery.Create(AWinControl);
   with FSQLQuery do
   begin
     DataBase := DataModuleMain.IBConnection;
@@ -135,7 +177,9 @@ begin
   end;
 
   FDataSource := TDataSource.Create(AWinControl);
-  FDataSource.DataSet := FSQLQuery;
+  FDataSource.DataSet := FSQLQuery; }
+
+  FCurTable := ACurTable;
 
   FDBLookupComboBox := TDBLookupComboBox.Create(AWinControl);
   with FDBLookupComboBox do
@@ -157,20 +201,19 @@ begin
     end;
   end;
 
-  FStringList := TStringList.Create;
+  CreateStringList;
+  {FStringList := TStringList.Create;
   for i := 0 to FSQLQuery.RecordCount - 1 do
   begin
     FStringList.Add(FSQLQuery.Fields.FieldByNumber(1).Value);
     FSQLQuery.Next;
-  end;
+  end; }
 
   FSQLQuery.Free;
   FDataSource.Free;
 end;
 
 function TMyLookupCB.GetValue: String;
-var
-  FSQLQuery: TSQLQuery;
 begin
   if FDBLookupComboBox.ItemIndex = -1 then
   begin
@@ -178,23 +221,43 @@ begin
     Exit;
   end;
   Result := FStringList.Strings[FDBLookupComboBox.ItemIndex];
-  {FSQLQuery := TSQLQuery.Create(Application);
-  with FSQLQuery do
-  begin
-    DataBase := DataModuleMain.IBConnection;
-    Transaction := DataModuleMain.SQLTransaction;
-    SQL.Text := Format('SELECT first 1 skip %d %s FROM %s', [FDBLookupComboBox.ItemIndex,
-      (Tables[8].Fields[FDBLookupComboBox.Tag] as TMyJoinedField).ReferencedField,
-      (Tables[8].Fields[FDBLookupComboBox.Tag] as TMyJoinedField).ReferencedTable]);
-    Open;
-    Result := Fields[0].AsString;
-    Free;
-  end;}
 end;
 
 function TMyLookupCB.GetText: String;
 begin
   Result := FDBLookupComboBox.Items[FDBLookupComboBox.ItemIndex];
+end;
+
+procedure TMyLookupCB.Refresh;
+var
+  LastID: String;
+  i: Integer;
+begin
+  LastID := GetValue;
+  with FDBLookupComboBox do
+    CreateSQLQueryAndDataSource(Parent, FCurTable, Tag);
+  CreateStringList;
+  FDBLookupComboBox.ListSource := FDataSource;
+  FDBLookupComboBox.ItemIndex := -1;
+  for i := 0 to FStringList.Count - 1 do
+    if FStringList.Strings[i] = LastID then
+    begin
+      FDBLookupComboBox.ItemIndex := i;
+    end;
+  {FSQLQuery := TSQLQuery.Create(AWinControl);
+  with FSQLQuery do
+  begin
+    DataBase := DataModuleMain.IBConnection;
+    Transaction := DataModuleMain.SQLTransaction;
+    SQL.Clear;
+    SQL.AddStrings(Format('SELECT %s, %s FROM %s', [(Tables[ACurTable].Fields[ACurField] as TMyJoinedField).ReferencedField,
+      (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName,
+      (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).ReferencedTable]));
+    Open;
+  end;
+
+  FDataSource := TDataSource.Create(AWinControl);
+  FDataSource.DataSet := FSQLQuery; }
 end;
 
 end.

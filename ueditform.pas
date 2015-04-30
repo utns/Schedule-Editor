@@ -19,13 +19,14 @@ type
     SourceSQLQuery: TSQLQuery;
     procedure BitBtnCancelClick(Sender: TObject);
     procedure BitBtnSaveClick(Sender: TObject);
-    procedure  CreateNew(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+    constructor Create(ACurTable: Integer; AFormType: TFormType; AID: Integer);
     procedure SQLInsert;
     procedure SQLUpdate;
     function GetNewID: String;
     procedure ApplyQuery(AQuery: String);
     function IsEqualValues(ATag: Integer): Boolean;
     function IsEmptyFields: Boolean;
+    procedure RefreshEditors;
   private
     ListViewDataSource: TDataSource;
     //SourceSQLQuery: TSQLQuery;
@@ -42,7 +43,8 @@ type
 
 var
   EditForm: TEditForm;
-  EActivateSQL: TEvent;
+  EActivateSQL, ERefreshEditors: TEvent;
+
 
 implementation
 
@@ -50,40 +52,38 @@ implementation
 
 { TEditForm }
 
-procedure TEditForm.CreateNew(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+constructor TEditForm.Create(ACurTable: Integer; AFormType: TFormType;
+  AID: Integer);
 var
-  AEditForm: TEditForm;
   i: Integer;
 begin
-  AEditForm := TEditForm.Create(Application);
-  with AEditForm do
+  Inherited Create(Application);
+  SourceSQLQuery.Close;
+  SourceSQLQuery.SQL.Clear;
+  SourceSQLQuery.SQL.Add(Tables[ACurTable].CreateSQlQuery(-1, -1, ''));
+  SourceSQLQuery.Open;
+  SourceSQLQuery.Locate(Tables[ACurTable].Fields[0].Name, AID, []);
+  CurTable := ACurTable;
+  FormType := AFormType;
+  Tag := AID;
+  Name := 'EditForm' + IntToStr(AID);
+  Caption := 'Карточка';
+  for i := 1 to Tables[ACurTable].FieldsCount - 1 do
   begin
-    SourceSQLQuery.Close;
-    SourceSQLQuery.SQL.Clear;
-    SourceSQLQuery.SQL.Add(Tables[ACurTable].CreateSQlQuery(-1, -1, ''));
-    SourceSQLQuery.Open;
-    SourceSQLQuery.Locate(Tables[ACurTable].Fields[0].Name, AID, []);
-    CurTable := ACurTable;
-    FormType := AFormType;
-    Tag := AID;
-    Caption := 'Карточка';
-    for i := 1 to Tables[ACurTable].FieldsCount - 1 do
+    SetLength(Editors, Length(Editors) + 1);
+    if Tables[ACurTable].Fields[i] is TMyJoinedField then
     begin
-        SetLength(Editors, Length(Editors) + 1);
-      if Tables[ACurTable].Fields[i] is TMyJoinedField then
-      begin
-        if (Tables[ACurTable].Fields[i] as TMyJoinedField).JoinedVisible then
-          Editors[High(Editors)] := TMyLookupCB.Create(AEditForm, ACurTable, i, AFormType, SourceSQLQuery);
-      end
-      else
-        if Tables[ACurTable].Fields[i].Visible then
-          Editors[High(Editors)] := TMyEdit.Create(AEditForm, ACurTable, i, AFormType, SourceSQLQuery);
-    end;
-    BitBtnSave.Top := 5 + 28 * i;
-    BitBtnCancel.Top := 5 + 28 * i;
-    Height := BitBtnCancel.Top + BitBtnCancel.Height + 5;
-    ShowModal;
+      if (Tables[ACurTable].Fields[i] as TMyJoinedField).JoinedVisible then
+        Editors[High(Editors)] := TMyLookupCB.Create(Self, ACurTable, i, AFormType, SourceSQLQuery);
+    end
+    else
+      if Tables[ACurTable].Fields[i].Visible then
+        Editors[High(Editors)] := TMyEdit.Create(Self, ACurTable, i, AFormType, SourceSQLQuery);
   end;
+  BitBtnSave.Top := 5 + 28 * i;
+  BitBtnCancel.Top := 5 + 28 * i;
+  Height := BitBtnCancel.Top + BitBtnCancel.Height + 5;
+  Show;
 end;
 
 procedure TEditForm.BitBtnSaveClick(Sender: TObject);
@@ -100,6 +100,7 @@ begin
   Close;
   DataModuleMain.SQLTransaction.Commit;
   EActivateSQL;
+  ERefreshEditors;
   //SourceSQLQuery.Locate('ScheduleID', 45, []);
 end;
 
@@ -201,6 +202,15 @@ begin
       Result := True;
       Exit;
     end;
+end;
+
+procedure TEditForm.RefreshEditors;
+var
+  i: Integer;
+begin
+  for i := 0 to High(Editors) do
+    if Editors[i] is TMyLookupCB then
+      Editors[i].Refresh;
 end;
 
 end.

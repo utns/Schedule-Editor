@@ -24,14 +24,15 @@ type
     procedure MenuItemExitClick(Sender: TObject);
     function IsFormOpen(AName: String): Boolean;
     procedure ActivateSQL;
+    procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+    procedure RefreshEditForms;
   private
     ListViewForms: array of TFormListView;
+    EditForms: array of TEditForm;
     { private declarations }
   public
     { public declarations }
   end;
-
-
 
 var
   MainForm: TMainForm;
@@ -49,6 +50,8 @@ begin
   for i := 0 to High(Tables) do
     AddReferenceItem(Tables[i].Name, Tables[i].Caption, i);
  EActivateSQL := @ActivateSQL;
+ ECreateNewEditForm := @CreateNewEditForm;
+ ERefreshEditors := @RefreshEditForms;
 end;
 
 procedure TMainForm.AddReferenceItem(AName, ACaption: String; ATag: Integer);
@@ -106,6 +109,32 @@ begin
     ListViewForms[i].OpenSQLQuery;
 end;
 
+procedure TMainForm.CreateNewEditForm(ACurTable: Integer; AFormType: TFormType;
+  AID: Integer);
+var
+  i: Integer;
+  FormName: String;
+  IsFormExists: Boolean = False;
+begin
+  FormName := 'EditForm' + IntToStr(AID);
+  for i := 0 to High(EditForms) do
+    if FormName = EditForms[i].Name then
+    begin
+      IsFormExists := True;
+      EditForms[i].ShowOnTop;
+      Exit;
+    end;
+  SetLength(EditForms, Length(EditForms) + 1);
+  EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
+end;
+
+procedure TMainForm.RefreshEditForms;
+var
+  i: Integer;
+begin
+  for i := 0 to High(EditForms) do
+    EditForms[i].RefreshEditors;
+end;
 
 end.
 

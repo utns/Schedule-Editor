@@ -175,7 +175,7 @@ begin
     Left := 410;
     Height := 23;
     Visible := True;
-    {PNG := TPortableNetworkGraphic.Create;
+    PNG := TPortableNetworkGraphic.Create;
     BMP := TBitmap.Create;
     PNG.LoadFromFile('Icons\Remove.png');
     BMP.Assign(PNG);
@@ -183,7 +183,7 @@ begin
     Spacing := 0;
     Layout := blGlyphTop;
     BMP.Free;
-    PNG.Free; }
+    PNG.Free;
     Parent := AWinControl;
     Top := 5;
     Hint := 'Удалить фильтр';

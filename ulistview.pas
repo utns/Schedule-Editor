@@ -46,10 +46,10 @@ type
     procedure SetParams;
     procedure DeleteSQL;
     procedure OpenSQLQuery;
-    //procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+    procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
   private
     Filters: array of TPanelFilter;
-    EditForms: array of TEditForm;
+    //EditForms: array of TEditForm;
     CurSortColumn: Integer;
     CurSortType: Integer;
     CellDblClick: Boolean;
@@ -64,6 +64,7 @@ type
 var
   FormListView: TFormListView;
   ECreateNewEditForm: TEventCreateNewEditForm;
+  ListViewForms: array of TFormListView;
 
 implementation
 
@@ -96,7 +97,7 @@ end;
 procedure TFormListView.DBGridDblClick(Sender: TObject);
 begin
   if CellDblClick then
-    ECreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
+    CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
@@ -134,7 +135,18 @@ begin
 end;
 
 procedure TFormListView.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  CurForm, i: Integer;
 begin
+  for i := 0 to High(ListViewForms) do
+    if Name = ListViewForms[i].Name then
+    begin
+      CurForm := i;
+      Break;
+    end;
+  for i := CurForm to High(ListViewForms) - 1 do
+    ListViewForms[i] := ListViewForms[i + 1];
+  SetLength(ListViewForms, Length(ListViewForms) - 1);
   CloseAction := caFree;
 end;
 
@@ -176,7 +188,7 @@ end;
 
 procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
 begin
-  ECreateNewEditForm(Self.Tag, ftAdd, 0);
+  CreateNewEditForm(Self.Tag, ftAdd, 0);
 end;
 
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
@@ -203,16 +215,23 @@ end;
 
 procedure TFormListView.SpeedButtonDeleteClick(Sender: TObject);
 var
-  ButtonSelected: Integer;
+  ButtonSelected, i: Integer;
 begin
   ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
   if ButtonSelected = mrYes then
-    DeleteSQL;
+    for i := 0 to High(EditForms) do
+      if SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value = EditForms[i].Tag then
+      begin
+        MessageDlg('Выбранная запись открыта для редактирования.', mtError, [mbOK], 0);
+        EditForms[i].ShowOnTop;
+        Exit;
+      end;
+  DeleteSQL;
 end;
 
 procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
 begin
-  ECreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
+  CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
@@ -336,12 +355,20 @@ begin
   SetTableColumns;
 end;
 
-{procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
+procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
   AFormType: TFormType; AID: Integer);
+var
+  i: Integer;
 begin
+  for i := 0 to High(EditForms) do
+    if AID = EditForms[i].Tag then
+    begin
+      EditForms[i].ShowOnTop;
+      Exit;
+    end;
   SetLength(EditForms, Length(EditForms) + 1);
   EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
-end; }
+end;
 
 end.
 

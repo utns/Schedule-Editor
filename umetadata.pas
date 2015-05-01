@@ -9,7 +9,7 @@ uses
 
 type
 
-  TFormType = (ftDelete, ftEdit, ftAdd);
+  TFormType = (ftEdit, ftAdd);
 
   { TMyField }
 

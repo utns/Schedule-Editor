@@ -20,6 +20,7 @@ type
     procedure BitBtnCancelClick(Sender: TObject);
     procedure BitBtnSaveClick(Sender: TObject);
     constructor Create(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SQLInsert;
     procedure SQLUpdate;
     function GetNewID: String;
@@ -28,8 +29,6 @@ type
     function IsEmptyFields: Boolean;
     procedure RefreshEditors;
   private
-    ListViewDataSource: TDataSource;
-    //SourceSQLQuery: TSQLQuery;
     FormType: TFormType;
     CurTable: Integer;
     Editors: array of TMainEditor;
@@ -44,7 +43,9 @@ type
 var
   EditForm: TEditForm;
   EActivateSQL, ERefreshEditors: TEvent;
+  EditForms: array of TEditForm;
 
+  procedure RefreshEditForms;
 
 implementation
 
@@ -86,7 +87,25 @@ begin
   Show;
 end;
 
+procedure TEditForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  CurForm, i: Integer;
+begin
+  for i := 0 to High(EditForms) do
+    if Name = EditForms[i].Name then
+    begin
+      CurForm := i;
+      Break;
+    end;
+  for i := CurForm to High(EditForms) - 1 do
+    EditForms[i] := EditForms[i + 1];
+  SetLength(EditForms, Length(EditForms) - 1);
+  CloseAction := caFree;
+end;
+
 procedure TEditForm.BitBtnSaveClick(Sender: TObject);
+var
+  ID: Integer;
 begin
   if IsEmptyFields then
   begin
@@ -100,7 +119,7 @@ begin
   Close;
   DataModuleMain.SQLTransaction.Commit;
   EActivateSQL;
-  ERefreshEditors;
+  RefreshEditForms;
   //SourceSQLQuery.Locate('ScheduleID', 45, []);
 end;
 
@@ -208,9 +227,18 @@ procedure TEditForm.RefreshEditors;
 var
   i: Integer;
 begin
+  SourceSQLQuery.Open;
   for i := 0 to High(Editors) do
     if Editors[i] is TMyLookupCB then
       Editors[i].Refresh;
+end;
+
+procedure RefreshEditForms;
+var
+  i: Integer;
+begin
+  for i := 0 to High(EditForms) do
+      EditForms[i].RefreshEditors;
 end;
 
 end.

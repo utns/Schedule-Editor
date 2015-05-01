@@ -43,7 +43,7 @@ object FormListView: TFormListView
         Color = clWindow
         Columns = <>
         DataSource = DataSource
-        Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
+        Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
         TabOrder = 0
         TitleImageList = DataModuleMain.ImageList
         OnCellClick = DBGridCellClick
@@ -463,6 +463,7 @@ object FormListView: TFormListView
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>
+    BeforeClose = SQLQueryBeforeClose
     Database = DataModuleMain.IBConnection
     Transaction = DataModuleMain.SQLTransaction
     SQL.Strings = (

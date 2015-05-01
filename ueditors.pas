@@ -28,7 +28,7 @@ type
     FSQLQuery: TSQLQuery;
     FDataSource: TDataSource;
     FCurTable: Integer;
-    procedure CreateSQLQueryAndDataSource(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer);
+    procedure CreateDataSource(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer);
     procedure CreateStringList;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer;
@@ -124,7 +124,7 @@ end;
 
 { TMyLookupCB }
 
-procedure TMyLookupCB.CreateSQLQueryAndDataSource(AWinControl: TWinControl;
+procedure TMyLookupCB.CreateDataSource(AWinControl: TWinControl;
   ACurTable: Integer; ACurField: Integer);
 begin
   FSQLQuery := TSQLQuery.Create(AWinControl);
@@ -133,9 +133,9 @@ begin
     DataBase := DataModuleMain.IBConnection;
     Transaction := DataModuleMain.SQLTransaction;
     SQL.Clear;
-    SQL.AddStrings(Format('SELECT %s, %s FROM %s ORDER BY 2', [(Tables[ACurTable].Fields[ACurField] as TMyJoinedField).ReferencedField,
-      (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName,
-      (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).ReferencedTable]));
+    with (Tables[ACurTable].Fields[ACurField] as TMyJoinedField) do
+      SQL.AddStrings(Format('SELECT %s, %s FROM %s ORDER BY 2', [ReferencedField,
+        JoinedFieldName, ReferencedTable]));
     Open;
   end;
   FDataSource := TDataSource.Create(AWinControl);
@@ -161,7 +161,7 @@ var
   i: Integer;
 begin
   inherited Create(AWinControl, ACurTable, ACurField);
-  CreateSQLQueryAndDataSource(AWinControl, ACurTable, ACurField);
+  CreateDataSource(AWinControl, ACurTable, ACurField);
   FCurTable := ACurTable;
 
   FDBLookupComboBox := TDBLookupComboBox.Create(AWinControl);
@@ -210,9 +210,8 @@ var
   i: Integer;
 begin
   LastID := GetValue;
-  CreateSQLQueryAndDataSource(FDBLookupComboBox.Parent, FCurTable, FDBLookupComboBox.Tag);
+  CreateDataSource(FDBLookupComboBox.Parent, FCurTable, FDBLookupComboBox.Tag);
   CreateStringList;
-  //ShowMessage('|'+ FStringList.Text + '|' + LastID);
   FDBLookupComboBox.ListSource := FDataSource;
   FDBLookupComboBox.ItemIndex := -1;
   for i := 0 to FStringList.Count - 1 do
@@ -221,7 +220,6 @@ begin
       FDBLookupComboBox.ItemIndex := i;
       Exit;
     end;
-  FStringList.Free;
   FSQLQuery.Free;
   FDataSource.Free;
 end;

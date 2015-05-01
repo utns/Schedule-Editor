@@ -66,7 +66,7 @@ CREATE TABLE Teachers_Subjects
 (
     ID INTEGER,
 	TeacherID INTEGER,
-	SubjectID INTEGER
+	SubjectID INTEGER,
 	FOREIGN KEY (SubjectID)  REFERENCES Subjects(SubjectID),
 	FOREIGN KEY (TeacherID)  REFERENCES Teachers(TeacherID)
 );
@@ -74,7 +74,7 @@ CREATE TABLE Group_Subjects
 (
     ID INTEGER,
 	GroupID INTEGER,
-	SubjectID INTEGER
+	SubjectID INTEGER,
 	FOREIGN KEY (GroupID)    REFERENCES Groups(GroupID),
 	FOREIGN KEY (SubjectID)  REFERENCES Subjects(SubjectID)
 );

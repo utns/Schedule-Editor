@@ -38,16 +38,25 @@ type
   end;
 
 type
-  TEvent = procedure of object;
+  TEvent = procedure;
+  TELocate = procedure(ACurTable, AID: Integer);
 
 var
   EditForm: TEditForm;
-  EActivateSQL, ERefreshEditors: TEvent;
+  EActivateSQL: TEvent;
+  ELocate: TELocate;
   EditForms: array of TEditForm;
 
-  procedure RefreshEditForms;
 
 implementation
+
+procedure RefreshEditForms;
+var
+  i: Integer;
+begin
+  for i := 0 to High(EditForms) do
+      EditForms[i].RefreshEditors;
+end;
 
 {$R *.lfm}
 
@@ -68,7 +77,7 @@ begin
   FormType := AFormType;
   Tag := AID;
   Name := 'EditForm' + IntToStr(AID);
-  Caption := 'Карточка';
+  Caption := 'Редактирование записи';
   for i := 1 to Tables[ACurTable].FieldsCount - 1 do
   begin
     SetLength(Editors, Length(Editors) + 1);
@@ -104,8 +113,6 @@ begin
 end;
 
 procedure TEditForm.BitBtnSaveClick(Sender: TObject);
-var
-  ID: Integer;
 begin
   if IsEmptyFields then
   begin
@@ -120,7 +127,6 @@ begin
   DataModuleMain.SQLTransaction.Commit;
   EActivateSQL;
   RefreshEditForms;
-  //SourceSQLQuery.Locate('ScheduleID', 45, []);
 end;
 
 procedure TEditForm.BitBtnCancelClick(Sender: TObject);
@@ -131,9 +137,11 @@ end;
 procedure TEditForm.SQLInsert;
 var
   i: Integer;
-  s: String;
+  s, NewID: String;
 begin
-  s := Format('INSERT INTO %s VALUES (%s', [Tables[CurTable].Name, GetNewID]);
+  NewID := GetNewID;
+  ELocate(CurTable, StrToInt(NewID));
+  s := Format('INSERT INTO %s VALUES (%s', [Tables[CurTable].Name, NewID]);
   for i := 0 to High(Editors) do
     s += ', :p' + IntToStr(i);
   s += ');';
@@ -231,14 +239,6 @@ begin
   for i := 0 to High(Editors) do
     if Editors[i] is TMyLookupCB then
       Editors[i].Refresh;
-end;
-
-procedure RefreshEditForms;
-var
-  i: Integer;
-begin
-  for i := 0 to High(EditForms) do
-      EditForms[i].RefreshEditors;
 end;
 
 end.

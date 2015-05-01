@@ -23,7 +23,6 @@ type
     procedure MenuItemClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
     function IsFormOpen(AName: String): Boolean;
-    procedure ActivateSQL;
   private
     { private declarations }
   public
@@ -45,7 +44,6 @@ var
 begin
   for i := 0 to High(Tables) do
     AddReferenceItem(Tables[i].Name, Tables[i].Caption, i);
- EActivateSQL := @ActivateSQL;
 end;
 
 procedure TMainForm.AddReferenceItem(AName, ACaption: String; ATag: Integer);
@@ -93,15 +91,6 @@ begin
       ListViewForms[i].ShowOnTop;
       Break;
     end;
-end;
-
-procedure TMainForm.ActivateSQL;
-var
-  i: Integer;
-begin
-  for i := 0 to High(ListViewForms) do
-    if ListViewForms[i] is TFormListView then
-      ListViewForms[i].OpenSQLQuery;
 end;
 
 end.

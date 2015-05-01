@@ -47,23 +47,19 @@ type
     procedure DeleteSQL;
     procedure OpenSQLQuery;
     procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+    procedure SQLQueryBeforeClose(DataSet: TDataSet);
   private
     Filters: array of TPanelFilter;
-    //EditForms: array of TEditForm;
     CurSortColumn: Integer;
     CurSortType: Integer;
     CellDblClick: Boolean;
-    { private declarations }
+    SelectedID: Integer;
   public
     { public declarations }
   end;
 
-type
-  TEventCreateNewEditForm = procedure(ACurTable: Integer; AFormType: TFormType; AID: Integer) of object;
-
 var
   FormListView: TFormListView;
-  ECreateNewEditForm: TEventCreateNewEditForm;
   ListViewForms: array of TFormListView;
 
 implementation
@@ -353,6 +349,8 @@ procedure TFormListView.OpenSQLQuery;
 begin
   SQLQuery.Open;
   SetTableColumns;
+  SQLQuery.Locate(Tables[Tag].Fields[0].Name, SelectedID, []);
+  SQLQuery.Prior;
 end;
 
 procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
@@ -369,6 +367,36 @@ begin
   SetLength(EditForms, Length(EditForms) + 1);
   EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
 end;
+
+procedure TFormListView.SQLQueryBeforeClose(DataSet: TDataSet);
+begin
+  SelectedID := SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value;
+end;
+
+procedure ActivateSQL;
+var
+  i: Integer;
+begin
+  for i := 0 to High(ListViewForms) do
+    ListViewForms[i].OpenSQLQuery;
+end;
+
+procedure SetLocate(ACurTable, AID: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to High(ListViewForms) do
+    if ListViewForms[i].Tag = ACurTable then
+    begin
+      ListViewForms[i].SQLQuery.Close;
+      ListViewForms[i].SelectedID := AID;
+      Exit;
+    end;
+end;
+
+initialization
+  EActivateSQL := @ActivateSQL;
+  ELocate := @SetLocate;
 
 end.
 

@@ -5,14 +5,14 @@ unit UFilters;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls,
-  Graphics, Dialogs, DbCtrls, ExtCtrls, StdCtrls, UMetadata, Buttons, UDBConnection;
+  Classes, SysUtils, FileUtil, Forms, Controls,Graphics, Dialogs, DbCtrls,
+  ExtCtrls, StdCtrls, UMetadata, Buttons, UDBConnection, sqldb;
 
 type
 
-  { TMainFilter }
+  { TBasicFilter }
 
-  TMainFilter = class
+  TBasicFilter = class
   private
     FSpeedButton: TSpeedButton;
     procedure Change(Sender: TObject);
@@ -23,7 +23,7 @@ type
 
   { TCBColumnName }
 
-  TCBColumnName = class(TMainFilter)
+  TCBColumnName = class(TBasicFilter)
   private
     FComboBoxColumnName: TComboBox;
   public
@@ -34,7 +34,7 @@ type
 
   { TCBFilterType }
 
-  TCBFilterType = class(TMainFilter)
+  TCBFilterType = class(TBasicFilter)
   private
     FComboBoxFilterType: TComboBox;
   public
@@ -45,7 +45,7 @@ type
 
   { TCBAndOr }
 
-  TCBAndOr = class(TMainFilter)
+  TCBAndOr = class(TBasicFilter)
   private
     FComboBoxAndOr: TComboBox;
   public
@@ -56,7 +56,7 @@ type
 
   { TEFilterValue }
 
-  TEFilterValue = class(TMainFilter)
+  TEFilterValue = class(TBasicFilter)
   private
     FEditFilterValue: TEdit;
   public
@@ -67,7 +67,7 @@ type
 
   { TBBDeleteFilter }
 
-  TBBDeleteFilter = class(TMainFilter)
+  TBBDeleteFilter = class(TBasicFilter)
   public
     FBitBtnDelete: TBitBtn;
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
@@ -97,7 +97,130 @@ type
     property Top: Integer write SetTop;
   end;
 
+  { TMainFilter }
+
+  TMainFilter = class
+  private
+
+    FCurTable: Integer;
+    FSpeedButton: TSpeedButton;
+    procedure ButtonDeleteFilterMouseUp(Sender: TObject;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+  public
+    FFilters: array of TPanelFilter;
+    procedure AddNewFilters(AWinControl: TWinControl;
+      ACurTable: Integer; ASpeedButton: TSpeedButton);
+    procedure SetParams(ASQLQuery: TSQLQuery);
+    function CreateSqlFilter: String;
+    constructor Create;
+  end;
+
 implementation
+
+{ TMainFilter }
+
+procedure TMainFilter.ButtonDeleteFilterMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  i, PanelTag: Integer;
+begin
+  PanelTag := (Sender as TBitBtn).Parent.Tag;
+  FFilters[PanelTag].Free;
+  for i := PanelTag to High(FFilters) - 1 do
+  begin
+    FFilters[i] := FFilters[i + 1];
+    FFilters[i].Tag := i;
+    FFilters[i].Top := i * 33;
+  end;
+  SetLength(FFilters, Length(FFilters) - 1);
+  FSpeedButton.Down := False;
+end;
+
+procedure TMainFilter.AddNewFilters(AWinControl: TWinControl; ACurTable: Integer;
+  ASpeedButton: TSpeedButton);
+begin
+  FSpeedButton := ASpeedButton;
+  FCurTable := ACurTable;
+  SetLength(FFilters, Length(FFilters) + 1);
+  FFilters[High(FFilters)] := TPanelFilter.Create(AWinControl, ACurTable, ASpeedButton, High(FFilters));
+  if High(FFilters) > 0 then
+    FFilters[High(FFilters)].FSBDeleteFilter.FBitBtnDelete.OnMouseUp := @ButtonDeleteFilterMouseUp;
+end;
+
+procedure TMainFilter.SetParams(ASQLQuery: TSQLQuery);
+var
+  i: Integer;
+  FilterValue: String;
+begin
+  for i := 0 to High(FFilters) do
+    with FFilters[i] do
+    begin
+      if GetFilterValue <> '' then
+      begin
+        case GetFilterType of
+          'Substring': FilterValue := '%' + GetFilterValue + '%';
+          'Begin': FilterValue := GetFilterValue + '%';
+          else FilterValue := GetFilterValue;
+        end;
+        ASQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
+      end;
+    end;
+end;
+
+function TMainFilter.CreateSqlFilter: String;
+var
+  i: Integer;
+  s, FilterType: String;
+begin
+  Result := '';
+  with Tables[FCurTable] do
+  begin
+    with FFilters[0] do
+    begin
+      s := ' WHERE %s.%s %s :p%d ';
+      case GetFilterType of
+       'Substring', 'Begin': FilterType := 'LIKE';
+       else FilterType := GetFilterType;
+      end;
+
+      if GetFilterValue <> '' then
+        if Fields[GetColumn] is TMyJoinedField then
+          Result += Format(s, [(Fields[GetColumn] as TMyJoinedField).ReferencedTable,
+            (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
+            FilterType, 0])
+        else
+          Result += Format(s, [Name, Fields[GetColumn].Name, FilterType, 0]);
+    end;
+
+    for i := 1 to High(FFilters) do
+    begin
+      with FFilters[i] do
+      begin
+        s := ' %s %s.%s %s :p%d';
+        case GetFilterType of
+          'Substring', 'Begin': FilterType := 'LIKE';
+          else FilterType := GetFilterType;
+        end;
+
+        if GetFilterValue <> '' then
+          if Fields[GetColumn] is TMyJoinedField then
+            Result += Format(s, [GetFilterAndOr,
+              (Fields[GetColumn] as TMyJoinedField).ReferencedTable,
+              (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
+              FilterType, i])
+          else
+            Result += Format(s, [GetFilterAndOr, Name, Fields[GetColumn].Name,
+              FilterType, i]);
+      end;
+    end;
+  end;
+end;
+
+constructor TMainFilter.Create;
+begin
+  inherited;
+  SetLength(FFilters, 0);
+end;
 
 { TPanelFilter }
 
@@ -177,7 +300,7 @@ begin
     Visible := True;
     PNG := TPortableNetworkGraphic.Create;
     BMP := TBitmap.Create;
-    PNG.LoadFromFile('Icons\Remove.png');
+    PNG.LoadFromFile('Icons/Remove.png');
     BMP.Assign(PNG);
     Glyph := BMP;
     Spacing := 0;
@@ -339,19 +462,19 @@ begin
   Result := FEditFilterValue.Text;
 end;
 
-{ TMainFilter }
+{ TBasicFilter }
 
-procedure TMainFilter.Change(Sender: TObject);
+procedure TBasicFilter.Change(Sender: TObject);
 begin
   FSpeedButton.Down := False;
 end;
 
-constructor TMainFilter.Create(ASpeedButton: TSpeedButton);
+constructor TBasicFilter.Create(ASpeedButton: TSpeedButton);
 begin
   FSpeedButton := ASpeedButton;
 end;
 
-constructor TMainFilter.Free;
+constructor TBasicFilter.Free;
 begin
 
 end;

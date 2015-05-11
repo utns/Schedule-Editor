@@ -34,28 +34,29 @@ type
     procedure DBGridTitleClick(Column: TColumn);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SetTableColumns;
-    procedure AddNewFilters;
+    //procedure AddNewFilters;
     procedure SpeedButtonAddClick(Sender: TObject);
     procedure SpeedButtonAddFilterClick(Sender: TObject);
-    procedure ButtonDeleteFilterMouseUp(Sender: TObject;
-      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    //procedure ButtonDeleteFilterMouseUp(Sender: TObject;
+     // Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SpeedButtonDeleteClick(Sender: TObject);
     procedure SpeedButtonEditClick(Sender: TObject);
     procedure SpeedButtonOKClick(Sender: TObject);
-    function CreateSqlFilter: String;
-    procedure SetParams;
+    //function CreateSqlFilter: String;
+    //procedure SetParams;
     procedure DeleteSQL;
     procedure OpenSQLQuery;
     procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
     procedure SQLQueryBeforeClose(DataSet: TDataSet);
   private
-    Filters: array of TPanelFilter;
+    MainFilter: TMainFilter;
+    //Filters: array of TPanelFilter;
     CurSortColumn: Integer;
     CurSortType: Integer;
     CellDblClick: Boolean;
     SelectedID: Integer;
   public
-    { public declarations }
+
   end;
 
 var
@@ -70,6 +71,7 @@ implementation
 
 constructor TFormListView.Create(AName, ACaption: String; ATag: Integer);
 begin
+
   Inherited Create(Application);
   Caption := ACaption;
   Name := AName;
@@ -79,7 +81,8 @@ begin
   SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery(-1, -1, ''));
   SQLQuery.Open;
   SetTableColumns;
-  AddNewFilters;
+  MainFilter := TMainFilter.Create;
+  MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
   Show;
   CurSortType := 0;
   CurSortColumn := -1;
@@ -111,8 +114,8 @@ begin
     CurSortType := (CurSortType + 1) mod 3;
     SQLQuery.Close;
     SQLQuery.SQL.Clear;
-    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CurSortColumn, CurSortType, CreateSqlFilter));
-    SetParams;
+    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CurSortColumn, CurSortType, MainFilter.CreateSqlFilter));
+    MainFilter.SetParams(SQLQuery);
     SQLQuery.Open;
     SetTableColumns;
     DBGrid.Columns[CurSortColumn].Width := DBGrid.Columns[CurSortColumn].Width + 16;
@@ -127,7 +130,7 @@ end;
 
 procedure TFormListView.ButtonAddFilterClick(Sender: TObject);
 begin
-  AddNewFilters;
+  MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
 end;
 
 procedure TFormListView.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -174,13 +177,13 @@ begin
     end;
 end;
 
-procedure TFormListView.AddNewFilters;
+{procedure TFormListView.AddNewFilters;
 begin
   SetLength(Filters, Length(Filters) + 1);
   Filters[High(Filters)] := TPanelFilter.Create(ScrollBox, Tag, SpeedButtonOK, High(Filters));
   if High(Filters) > 0 then
     Filters[High(Filters)].FSBDeleteFilter.FBitBtnDelete.OnMouseUp := @ButtonDeleteFilterMouseUp;
-end;
+end;     }
 
 procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
 begin
@@ -189,10 +192,10 @@ end;
 
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
 begin
-  AddNewFilters;
+  MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
 end;
 
-procedure TFormListView.ButtonDeleteFilterMouseUp(Sender: TObject;
+{procedure TFormListView.ButtonDeleteFilterMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   i, PanelTag: Integer;
@@ -207,7 +210,7 @@ begin
   end;
   SetLength(Filters, Length(Filters) - 1);
   SpeedButtonOK.Down := False;
-end;
+end;  }
 
 procedure TFormListView.SpeedButtonDeleteClick(Sender: TObject);
 var
@@ -218,11 +221,12 @@ begin
     for i := 0 to High(EditForms) do
       if SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value = EditForms[i].Tag then
       begin
-        MessageDlg('Выбранная запись открыта для редактирования.', mtError, [mbOK], 0);
+        MessageDlg('Выбранная запись редактируется.', mtError, [mbOK], 0);
         EditForms[i].ShowOnTop;
         Exit;
       end;
   DeleteSQL;
+  RefreshEditForms;
 end;
 
 procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
@@ -232,7 +236,7 @@ end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
 begin
-  if (Length(Filters) > 1) and (Filters[0].GetFilterValue = '') then
+  if (Length(MainFilter.FFilters) > 1) and (MainFilter.FFilters[0].GetFilterValue = '') then
   begin
       ShowMessage('Установите значение первого фильтра.');
       SpeedButtonOK.Down := False;
@@ -242,14 +246,14 @@ begin
     SpeedButtonOK.Down := True;
     SQLQuery.Close;
     SQLQuery.SQL.Clear;
-    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(-1, -1, CreateSqlFilter));
-    SetParams;
+    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(-1, -1, MainFilter.CreateSqlFilter));
+    MainFilter.SetParams(SQLQuery);
     SQLQuery.Open;
     SetTableColumns;
   end;
 end;
 
-function TFormListView.CreateSqlFilter: String;
+{function TFormListView.CreateSqlFilter: String;
 var
   i: Integer;
   s, FilterType: String;
@@ -296,15 +300,15 @@ begin
       end;
     end;
   end;
-end;
+end;}
 
-procedure TFormListView.SetParams;
+{procedure TFormListView.SetParams;
 var
   i: Integer;
   FilterValue: String;
 begin
-  for i := 0 to High(Filters) do
-    with Filters[i] do
+  for i := 0 to High(MainFilter.FFilters) do
+    with MainFilter.FFilters[i] do
     begin
       if GetFilterValue <> '' then
       begin
@@ -316,7 +320,7 @@ begin
         SQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
       end;
     end;
-end;
+end;}
 
 procedure TFormListView.DeleteSQL;
 var
@@ -328,7 +332,8 @@ begin
     begin
       s := SQL.Text;
       Close;
-      SQL.Text := Format('DELETE FROM %s WHERE %s = %s;', [Tables[Self.Tag].Name, Tables[Self.Tag].Fields[0].Name, id]);
+      with Tables[Self.Tag] do
+        SQL.Text := Format('DELETE FROM %s WHERE %s = %s;', [Name, Fields[0].Name, id]);
       ExecSQL;
       DataModuleMain.SQLTransaction.Commit;
       SQL.Clear;
@@ -350,7 +355,6 @@ begin
   SQLQuery.Open;
   SetTableColumns;
   SQLQuery.Locate(Tables[Tag].Fields[0].Name, SelectedID, []);
-  SQLQuery.Prior;
 end;
 
 procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
@@ -358,12 +362,13 @@ procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
 var
   i: Integer;
 begin
-  for i := 0 to High(EditForms) do
-    if AID = EditForms[i].Tag then
-    begin
-      EditForms[i].ShowOnTop;
-      Exit;
-    end;
+  if AID <> 0 then
+    for i := 0 to High(EditForms) do
+      if AID = EditForms[i].Tag then
+      begin
+        EditForms[i].ShowOnTop;
+        Exit;
+      end;
   SetLength(EditForms, Length(EditForms) + 1);
   EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
 end;

@@ -47,6 +47,7 @@ var
   ELocate: TELocate;
   EditForms: array of TEditForm;
 
+procedure RefreshEditForms;
 
 implementation
 
@@ -55,7 +56,7 @@ var
   i: Integer;
 begin
   for i := 0 to High(EditForms) do
-      EditForms[i].RefreshEditors;
+    EditForms[i].RefreshEditors;
 end;
 
 {$R *.lfm}
@@ -76,8 +77,10 @@ begin
   CurTable := ACurTable;
   FormType := AFormType;
   Tag := AID;
-  Name := 'EditForm' + IntToStr(AID);
-  Caption := 'Редактирование записи';
+  if AFormType = ftEdit then
+    Caption := 'Редактирование записи'
+  else
+    Caption := 'Добавление записи';
   for i := 1 to Tables[ACurTable].FieldsCount - 1 do
   begin
     SetLength(Editors, Length(Editors) + 1);
@@ -101,7 +104,7 @@ var
   CurForm, i: Integer;
 begin
   for i := 0 to High(EditForms) do
-    if Name = EditForms[i].Name then
+    if (Tag = EditForms[i].Tag) and (CurTable = EditForms[i].CurTable) then
     begin
       CurForm := i;
       Break;
@@ -116,13 +119,22 @@ procedure TEditForm.BitBtnSaveClick(Sender: TObject);
 begin
   if IsEmptyFields then
   begin
-    MessageDlg('Заполните пустые поля.', mtError, [mbNo], 0);
+    MessageDlg('Заполните пустые поля.', mtError, [mbOK], 0);
     Exit;
   end;
-  if FormType = ftAdd then
-    SQLInsert
-  else
-    SQLUpdate;
+  try
+    if FormType = ftAdd then
+      SQLInsert
+    else
+      SQLUpdate;
+  except
+    on E: EVariantError do
+    begin
+      MessageDlg('Неправильный тип поля.', mtError, [mbOK], 0);
+      EActivateSQL;
+      Exit;
+    end;
+  end;
   Close;
   DataModuleMain.SQLTransaction.Commit;
   EActivateSQL;
@@ -154,6 +166,7 @@ var
   s: string;
   ChangedField: Boolean;
 begin
+  ELocate(CurTable, StrToInt(SourceSQLQuery.Fields.FieldByName(Tables[CurTable].Fields[0].Name).Value));
   ChangedField := False;
   s := 'UPDATE ' + Tables[CurTable].Name + ' SET';
   for i := 1 to Tables[CurTable].FieldsCount - 1 do
@@ -165,6 +178,7 @@ begin
   Delete(s, Length(s), 1);
   s += Format(' WHERE %s = %s' , [Tables[CurTable].Fields[0].Name,
     SourceSQLQuery.Fields.FieldByName(Tables[CurTable].Fields[0].Name).Value]);
+
 
   if ChangedField then
     with MainSQLQuery do
@@ -235,7 +249,11 @@ procedure TEditForm.RefreshEditors;
 var
   i: Integer;
 begin
+  SourceSQLQuery.Close;
+  SourceSQLQuery.SQL.Clear;
+  SourceSQLQuery.SQL.Add(Tables[CurTable].CreateSQlQuery(-1, -1, ''));
   SourceSQLQuery.Open;
+  SourceSQLQuery.Locate(Tables[CurTable].Fields[0].Name, Tag, []);
   for i := 0 to High(Editors) do
     if Editors[i] is TMyLookupCB then
       Editors[i].Refresh;

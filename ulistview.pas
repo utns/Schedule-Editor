@@ -34,23 +34,17 @@ type
     procedure DBGridTitleClick(Column: TColumn);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure SetTableColumns;
-    //procedure AddNewFilters;
     procedure SpeedButtonAddClick(Sender: TObject);
     procedure SpeedButtonAddFilterClick(Sender: TObject);
-    //procedure ButtonDeleteFilterMouseUp(Sender: TObject;
-     // Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SpeedButtonDeleteClick(Sender: TObject);
     procedure SpeedButtonEditClick(Sender: TObject);
     procedure SpeedButtonOKClick(Sender: TObject);
-    //function CreateSqlFilter: String;
-    //procedure SetParams;
     procedure DeleteSQL;
     procedure OpenSQLQuery;
     procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
     procedure SQLQueryBeforeClose(DataSet: TDataSet);
   private
     MainFilter: TMainFilter;
-    //Filters: array of TPanelFilter;
     CurSortColumn: Integer;
     CurSortType: Integer;
     CellDblClick: Boolean;
@@ -177,14 +171,6 @@ begin
     end;
 end;
 
-{procedure TFormListView.AddNewFilters;
-begin
-  SetLength(Filters, Length(Filters) + 1);
-  Filters[High(Filters)] := TPanelFilter.Create(ScrollBox, Tag, SpeedButtonOK, High(Filters));
-  if High(Filters) > 0 then
-    Filters[High(Filters)].FSBDeleteFilter.FBitBtnDelete.OnMouseUp := @ButtonDeleteFilterMouseUp;
-end;     }
-
 procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
 begin
   CreateNewEditForm(Self.Tag, ftAdd, 0);
@@ -194,23 +180,6 @@ procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
 begin
   MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
 end;
-
-{procedure TFormListView.ButtonDeleteFilterMouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var
-  i, PanelTag: Integer;
-begin
-  PanelTag := (Sender as TBitBtn).Parent.Tag;
-  Filters[PanelTag].Free;
-  for i := PanelTag to High(Filters) - 1 do
-  begin
-    Filters[i] := Filters[i + 1];
-    Filters[i].Tag := i;
-    Filters[i].Top := i * 33;
-  end;
-  SetLength(Filters, Length(Filters) - 1);
-  SpeedButtonOK.Down := False;
-end;  }
 
 procedure TFormListView.SpeedButtonDeleteClick(Sender: TObject);
 var
@@ -252,75 +221,6 @@ begin
     SetTableColumns;
   end;
 end;
-
-{function TFormListView.CreateSqlFilter: String;
-var
-  i: Integer;
-  s, FilterType: String;
-begin
-  Result := '';
-  with Tables[Tag] do
-  begin
-    with Filters[0] do
-    begin
-      s := ' WHERE %s.%s %s :p%d ';
-      case GetFilterType of
-       'Substring', 'Begin': FilterType := 'LIKE';
-       else FilterType := GetFilterType;
-      end;
-
-      if GetFilterValue <> '' then
-        if Fields[GetColumn] is TMyJoinedField then
-          Result += Format(s, [(Fields[GetColumn] as TMyJoinedField).ReferencedTable,
-            (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
-            FilterType, 0])
-        else
-          Result += Format(s, [Name, Fields[GetColumn].Name, FilterType, 0]);
-    end;
-
-    for i := 1 to High(Filters) do
-    begin
-      with Filters[i] do
-      begin
-        s := ' %s %s.%s %s :p%d';
-        case GetFilterType of
-          'Substring', 'Begin': FilterType := 'LIKE';
-          else FilterType := GetFilterType;
-        end;
-
-        if GetFilterValue <> '' then
-          if Fields[GetColumn] is TMyJoinedField then
-            Result += Format(s, [GetFilterAndOr,
-              (Fields[GetColumn] as TMyJoinedField).ReferencedTable,
-              (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
-              FilterType, i])
-          else
-            Result += Format(s, [GetFilterAndOr, Name, Fields[GetColumn].Name,
-              FilterType, i]);
-      end;
-    end;
-  end;
-end;}
-
-{procedure TFormListView.SetParams;
-var
-  i: Integer;
-  FilterValue: String;
-begin
-  for i := 0 to High(MainFilter.FFilters) do
-    with MainFilter.FFilters[i] do
-    begin
-      if GetFilterValue <> '' then
-      begin
-        case GetFilterType of
-          'Substring': FilterValue := '%' + GetFilterValue + '%';
-          'Begin': FilterValue := GetFilterValue + '%';
-          else FilterValue := GetFilterValue;
-        end;
-        SQLQuery.ParamByName('p' + IntToStr(i)).AsString := FilterValue;
-      end;
-    end;
-end;}
 
 procedure TFormListView.DeleteSQL;
 var

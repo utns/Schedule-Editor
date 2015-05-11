@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  DbCtrls, UMetadata, sqldb, UListView, UAbout, UEditForm;
+  DbCtrls, UMetadata, sqldb, UListView, UAbout, UEditForm, Unit1;
 
 type
 
@@ -14,6 +14,7 @@ type
 
   TMainForm = class(TForm)
     MainMenu: TMainMenu;
+    MenuItemSchedule: TMenuItem;
     MenuItemAbout: TMenuItem;
     MenuItemExit: TMenuItem;
     MenuItemReference: TMenuItem;
@@ -23,6 +24,7 @@ type
     procedure MenuItemClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
     function IsFormOpen(AName: String): Boolean;
+    procedure MenuItemScheduleClick(Sender: TObject);
   private
     { private declarations }
   public
@@ -93,5 +95,10 @@ begin
     end;
 end;
 
-end.
+procedure TMainForm.MenuItemScheduleClick(Sender: TObject);
+begin
+  Form1.Show;
+end;
 
+end.
+

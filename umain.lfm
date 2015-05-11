@@ -1,19 +1,23 @@
 object MainForm: TMainForm
-  Left = 2031
+  Left = 1917
   Height = 20
-  Top = 599
-  Width = 230
+  Top = 584
+  Width = 320
   Caption = 'Расписание'
   Constraints.MaxHeight = 20
-  Constraints.MaxWidth = 230
+  Constraints.MaxWidth = 320
   Constraints.MinHeight = 20
-  Constraints.MinWidth = 230
+  Constraints.MinWidth = 320
   Menu = MainMenu
   OnCreate = FormCreate
   LCLVersion = '1.2.4.0'
   object MainMenu: TMainMenu
     left = 32
     top = 32
+    object MenuItemSchedule: TMenuItem
+      Caption = 'Расписание'
+      OnClick = MenuItemScheduleClick
+    end
     object MenuItemReference: TMenuItem
       Caption = 'Справочник'
     end

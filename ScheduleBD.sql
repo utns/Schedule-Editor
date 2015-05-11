@@ -19,7 +19,8 @@ CREATE TABLE Students
 ( 
 	StudentID       INTEGER PRIMARY KEY,
 	StudentInitials VARCHAR (100) ,
-	GroupID         INTEGER 
+	GroupID         INTEGER,
+    FOREIGN KEY (GroupID) REFERENCES Groups(GroupID)	
 );
 CREATE TABLE Subjects
 ( 

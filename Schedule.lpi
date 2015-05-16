@@ -106,12 +106,12 @@
         <UnitName Value="UEditors"/>
       </Unit9>
       <Unit10>
-        <Filename Value="unit1.pas"/>
+        <Filename Value="uscheduleform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="Unit1"/>
+        <UnitName Value="UScheduleForm"/>
       </Unit10>
     </Units>
   </ProjectOptions>

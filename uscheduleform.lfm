@@ -1,0 +1,140 @@
+object Form1: TForm1
+  Left = 2056
+  Height = 590
+  Top = 184
+  Width = 829
+  Caption = 'Form1'
+  ClientHeight = 590
+  ClientWidth = 829
+  OnCreate = FormCreate
+  LCLVersion = '1.2.4.0'
+  object Panel: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 0
+    Height = 136
+    Top = 0
+    Width = 829
+    Anchors = [akTop, akLeft, akRight]
+    ClientHeight = 136
+    ClientWidth = 829
+    TabOrder = 1
+    object CBColName: TComboBox
+      Left = 72
+      Height = 23
+      Top = 8
+      Width = 100
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 1
+    end
+    object CBRowName: TComboBox
+      Left = 72
+      Height = 23
+      Top = 40
+      Width = 100
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 0
+    end
+    object LabelColName: TLabel
+      Left = 8
+      Height = 15
+      Top = 15
+      Width = 53
+      Caption = 'Столбцы:'
+      ParentColor = False
+    end
+    object LabelRowName: TLabel
+      Left = 8
+      Height = 15
+      Top = 48
+      Width = 43
+      Caption = 'Строки:'
+      ParentColor = False
+    end
+    object SpeedButtonOK: TSpeedButton
+      Left = 336
+      Height = 22
+      Top = 8
+      Width = 23
+      AllowAllUp = True
+      Caption = 'OK'
+      GroupIndex = 1
+      OnClick = SpeedButtonOKClick
+    end
+    object ScrollBox: TScrollBox
+      AnchorSideTop.Control = Panel
+      AnchorSideRight.Control = Panel
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = Panel
+      AnchorSideBottom.Side = asrBottom
+      Left = 368
+      Height = 124
+      Top = 6
+      Width = 455
+      HorzScrollBar.Page = 1
+      VertScrollBar.Page = 1
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Top = 5
+      BorderSpacing.Right = 5
+      BorderSpacing.Bottom = 5
+      TabOrder = 2
+    end
+    object SpeedButtonAdd: TSpeedButton
+      Left = 336
+      Height = 22
+      Top = 56
+      Width = 23
+      Caption = 'Add'
+      OnClick = SpeedButtonAddClick
+    end
+    object CheckListBox: TCheckListBox
+      AnchorSideTop.Control = Panel
+      AnchorSideBottom.Control = Panel
+      AnchorSideBottom.Side = asrBottom
+      Left = 192
+      Height = 124
+      Top = 6
+      Width = 136
+      Anchors = [akTop, akLeft, akBottom]
+      BorderSpacing.Top = 5
+      BorderSpacing.Bottom = 5
+      ItemHeight = 0
+      MultiSelect = True
+      TabOrder = 3
+    end
+  end
+  object DrawGrid: TDrawGrid
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Panel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 454
+    Top = 136
+    Width = 829
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ExtendedSelect = False
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSizing, goColSizing, goSmoothScroll]
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 0
+    OnDrawCell = StringGridDrawCell
+    OnMouseMove = DrawGridMouseMove
+    OnSelectCell = StringGridSelectCell
+  end
+  object SQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = DataModuleMain.IBConnection
+    Transaction = DataModuleMain.SQLTransaction
+    Params = <>
+    left = 331
+    top = 252
+  end
+end

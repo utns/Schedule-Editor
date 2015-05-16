@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  DbCtrls, UMetadata, sqldb, UListView, UAbout, UEditForm, Unit1;
+  DbCtrls, UMetadata, sqldb, UListView, UAbout, UEditForm, UScheduleForm;
 
 type
 

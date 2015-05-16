@@ -26,6 +26,7 @@ type
   TCBColumnName = class(TBasicFilter)
   private
     FComboBoxColumnName: TComboBox;
+    FStringList: TStringList;
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
     constructor Free; override;
@@ -363,6 +364,7 @@ var
 begin
   Inherited Create(ASpeedButton);
   FComboBoxColumnName := TComboBox.Create(AWinControl);
+  FStringList := TStringList.Create;
   with FComboBoxColumnName do
   begin
     Visible := True;
@@ -374,10 +376,17 @@ begin
     ReadOnly := True;
     with Tables[ACurTable] do
       for i := 0 to FieldsCount - 1 do
-        if Fields[i] is TMyJoinedField then
-          Items.Add((Fields[i] as TMyJoinedField).JoinedFieldCaption)
+        if (Fields[i] is TMyJoinedField) and ((Fields[i] as TMyJoinedField).JoinedVisible) then
+        begin
+          Items.Add((Fields[i] as TMyJoinedField).JoinedFieldCaption);
+          FStringList.Append(IntToStr(i));
+        end
         else
-          Items.Add(Fields[i].Caption);
+          if Fields[i].Visible then
+          begin
+            Items.Add(Fields[i].Caption);
+            FStringList.Append(IntToStr(i));
+          end;
     ItemIndex := 0;
     OnChange := @Change;
   end;
@@ -386,11 +395,12 @@ end;
 constructor TCBColumnName.Free;
 begin
   FComboBoxColumnName.Free;
+  FStringList.Free;
 end;
 
 function TCBColumnName.GetColumn: Integer;
 begin
-  Result := FComboBoxColumnName.ItemIndex;
+  Result := StrToInt(FStringList.Strings[FComboBoxColumnName.ItemIndex]);
 end;
 
 { TCBFilterType }

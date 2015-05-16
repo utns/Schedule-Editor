@@ -167,7 +167,8 @@ var
 begin
   if (Fields[0] is TMyJoinedField) then
     Result := 'Select ' + (Fields[0] as TMyJoinedField).ReferencedTable
-    + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName
+    + '.' + (Fields[0] as TMyJoinedField).JoinedFieldName + ', '
+    + Name + '.' + Fields[0].Name
   else
     Result := 'Select ' + Name + '.' + Fields[0].Name;
 
@@ -176,7 +177,8 @@ begin
 
   if (Fields[i] is TMyJoinedField) then
     Result += ', ' + (Fields[i] as TMyJoinedField).ReferencedTable
-      + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName
+      + '.' + (Fields[i] as TMyJoinedField).JoinedFieldName + ', '
+      + Name + '.' + Fields[i].Name
     else
       Result += ', ' + Name + '.' + Fields[i].Name;
   end;

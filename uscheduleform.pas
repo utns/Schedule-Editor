@@ -6,11 +6,12 @@ interface
 
 uses
   Classes, SysUtils, sqldb, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  ExtCtrls, StdCtrls, Buttons, CheckLst, UMetadata, UFilters;
+  ExtCtrls, StdCtrls, Buttons, CheckLst, UMetadata, UFilters, math, UButtons,
+  UEditForm;
 
 type
 
-  { TForm1 }
+  { TScheduleForm }
 
   TMyCaption = record
     Name: String;
@@ -20,11 +21,16 @@ type
   { TMyRecord }
 
   TMyRecord = class
+  private
     FStringList: TStringList;
-    FID: Integer;
+    FEditButton: TEditButton;
+    FID, FHeight: Integer;
   public
-    procedure Print(ACanvas: TCanvas; ARect: TRect; AOffset: Integer);
-    constructor Create(AStringList: TStringList; AID: Integer);
+    procedure Print(ACanvas: TCanvas; ARect: TRect; ANumber: Integer);
+    procedure CheckClick(AX, AY: Integer);
+    function MaxWidth(ACanvas: TCanvas): Integer;
+    constructor Create(AStringList: TStringList; AID, ACol, ARow, ARecord: Integer;
+      AEditButtonOnClick: TEOnClick);
   end;
 
   { TMyCell }
@@ -32,14 +38,18 @@ type
   TMyCell = class
   private
     FRecords: array of TMyRecord;
+    FCol, FRow: Integer;
+    FExpandButton: TExpandButton;
   public
-    procedure AddRecord(AStringList: TStringList; AID: Integer);
+    procedure AddRecord(AStringList: TStringList; AID: Integer; AEditButtonOnClick: TEOnClick);
     procedure Print(ACanvas: TCanvas; ARect: TRect);
+    procedure CheckClick(AX, AY, ATop, AHeight: Integer);
     function GetHint: String;
-    constructor Create;
+    function MaxWidth(ACanvas: TCanvas): Integer;
+    constructor Create(ACol, ARow: Integer; AExpandButtonOnClick: TEOnClick);
   end;
 
-  TForm1 = class(TForm)
+  TScheduleForm = class(TForm)
     CBColName: TComboBox;
     CBRowName: TComboBox;
     CheckListBox: TCheckListBox;
@@ -51,6 +61,8 @@ type
     SpeedButtonOK: TSpeedButton;
     SpeedButtonAdd: TSpeedButton;
     SQLQuery: TSQLQuery;
+    procedure DrawGridMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure DrawGridMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure FormCreate(Sender: TObject);
@@ -61,18 +73,21 @@ type
     procedure StringGridSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
     procedure FillGrid;
+    procedure DGEditButtonClick(ACol, ARow, ARecord: Integer);
+    procedure DGExpandButtonClick(ACol, ARow, ARecord: Integer);
+    function CalcChecked: Integer;
   private
     MainFilter: TMainFilter;
+    RecordHeight: Integer;
     ColCaptions, RowCaptions: array of TMyCaption;
     Grid: array of array of TMyCell;
-    function CalcChecked: Integer;
     { private declarations }
   public
     { public declarations }
   end;
 
 var
-  Form1: TForm1;
+  ScheduleForm: TScheduleForm;
 
 const
   CurTable = 8;
@@ -83,7 +98,7 @@ implementation
 
 { TMyRecord }
 
-procedure TMyRecord.Print(ACanvas: TCanvas; ARect: TRect; AOffset: Integer);
+procedure TMyRecord.Print(ACanvas: TCanvas; ARect: TRect; ANumber: Integer);
 var
   i, ATextHeight: Integer;
 begin
@@ -91,24 +106,46 @@ begin
   begin
     ATextHeight := TextHeight('A');
     for i := 0 to FStringList.Count - 1 do
-      TextOut(ARect.Left, ARect.Top + (i + FStringList.Count * AOffset) * ATextHeight,
-        FStringList.Strings[i]) ;
+      TextOut(ARect.Left, ARect.Top + (i + FStringList.Count * ANumber) * ATextHeight,
+        FStringList.Strings[i]);
   end;
+  FEditButton.Print(ACanvas, ARect.Right, ARect.Top + FStringList.Count * ANumber * ATextHeight);
+  FHeight := FStringList.Count * ATextHeight;
 end;
 
-constructor TMyRecord.Create(AStringList: TStringList; AID: Integer);
+procedure TMyRecord.CheckClick(AX, AY: Integer);
+begin
+  FEditButton.CheckClick(AX, AY);
+end;
+
+function TMyRecord.MaxWidth(ACanvas: TCanvas): Integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+  for i := 0 to FStringList.Count - 1 do
+    Result := Max(Result, ACanvas.TextWidth(FStringList.Strings[i]));
+end;
+
+constructor TMyRecord.Create(AStringList: TStringList; AID, ACol, ARow,
+  ARecord: Integer; AEditButtonOnClick: TEOnClick);
 begin
   FStringList := TStringList.Create;
   FStringList.Text := AStringList.Text;
+  FEditButton := TEditButton.Create(ACol, ARow, ARecord);
+  FEditButton.OnClick := AEditButtonOnClick;
+  //FEditButton.OnClick := AEditButtonOnClick;
   FID := AID;
 end;
 
 { TMyCell }
 
-procedure TMyCell.AddRecord(AStringList: TStringList; AID: Integer);
+procedure TMyCell.AddRecord(AStringList: TStringList; AID: Integer;
+  AEditButtonOnClick: TEOnClick);
 begin
   SetLength(FRecords, Length(FRecords) + 1);
-  FRecords[High(FRecords)] := TMyRecord.Create(AStringList, AID);
+  FRecords[High(FRecords)] := TMyRecord.Create(AStringList, AID, FCol, FRow,
+  High(FRecords), AEditButtonOnClick);
 end;
 
 procedure TMyCell.Print(ACanvas: TCanvas; ARect: TRect);
@@ -117,6 +154,17 @@ var
 begin
   for i := 0 to High(FRecords) do
     FRecords[i].Print(ACanvas, ARect, i);
+  if Length(FRecords) > 0 then
+    FExpandButton.Print(ACanvas, ARect.Right, ARect.Bottom);
+end;
+
+procedure TMyCell.CheckClick(AX, AY, ATop, AHeight: Integer);
+var
+  i: Integer;
+begin
+  if High(FRecords) >= (AY - ATop) div AHeight then
+    FRecords[(AY - ATop) div AHeight].CheckClick(AX, AY);
+  FExpandButton.CheckClick(AX, AY);
 end;
 
 function TMyCell.GetHint: String;
@@ -128,14 +176,28 @@ begin
     Result += FRecords[i].FStringList.Text;
 end;
 
-constructor TMyCell.Create;
+function TMyCell.MaxWidth(ACanvas: TCanvas): Integer;
+var
+  i: Integer;
 begin
+  Result := -1;
+  for i := 0 to High(FRecords) do
+    Result := Max(Result, FRecords[i].MaxWidth(ACanvas));
+end;
+
+constructor TMyCell.Create(ACol, ARow: Integer; AExpandButtonOnClick: TEOnClick
+  );
+begin
+  FCol := ACol;
+  FRow := ARow;
+  FExpandButton := TExpandButton.Create(ACol, ARow, -1);
+  FExpandButton.OnClick := AExpandButtonOnClick;
   SetLength(FRecords, 0);
 end;
 
-{ TForm1 }
+{ TScheduleForm }
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TScheduleForm.FormCreate(Sender: TObject);
 var
   i: Integer;
 begin
@@ -164,7 +226,7 @@ begin
   DrawGrid.Invalidate;
 end;
 
-procedure TForm1.DrawGridMouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TScheduleForm.DrawGridMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   ACol, ARow: Integer;
@@ -179,30 +241,40 @@ begin
   end
 end;
 
-procedure TForm1.SpeedButtonAddClick(Sender: TObject);
+procedure TScheduleForm.DrawGridMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  ACol, ARow: Integer;
+begin
+  DrawGrid.MouseToCell(X, Y, ACol, ARow);
+  if (ACol <> 0) and (ARow <> 0) then
+    Grid[ACol - 1][ARow - 1].CheckClick(X, Y, DrawGrid.CellRect(ACol, ARow).Top, RecordHeight);
+end;
+
+procedure TScheduleForm.SpeedButtonAddClick(Sender: TObject);
 begin
   MainFilter.AddNewFilters(ScrollBox, CurTable, SpeedButtonOK);
 end;
 
-procedure TForm1.SpeedButtonOKClick(Sender: TObject);
+procedure TScheduleForm.SpeedButtonOKClick(Sender: TObject);
 begin
   FillGrid;
   DrawGrid.Invalidate;
 end;
 
-procedure TForm1.StringGridDrawCell(Sender: TObject; aCol, aRow: Integer;
+procedure TScheduleForm.StringGridDrawCell(Sender: TObject; aCol, aRow: Integer;
   aRect: TRect; aState: TGridDrawState);
 var
-  ATextHeight, i, k, j, CountChecked: Integer;
+  ATextHeight, CountChecked: Integer;
 begin
   with DrawGrid.Canvas do
   begin
     ATextHeight := TextHeight('A');
     CountChecked := CalcChecked;
+    RecordHeight := (CountChecked + 1) * ATextHeight;
     FillRect(aRect);
     if (aCol = 0) and (aRow = 0) then
     begin
-      SQLQuery.First;
       DrawGrid.DefaultRowHeight := CountChecked * ATextHeight;
     end;
     if (aCol = 0) and (aRow <> 0) then
@@ -236,14 +308,14 @@ begin
 
 end;
 
-procedure TForm1.StringGridSelectCell(Sender: TObject; aCol, aRow: Integer;
+procedure TScheduleForm.StringGridSelectCell(Sender: TObject; aCol, aRow: Integer;
   var CanSelect: Boolean);
 begin
   DrawGrid.Invalidate;
   //CanSelect := False;
 end;
 
-procedure TForm1.FillGrid;
+procedure TScheduleForm.FillGrid;
 var
   i, j, CurCol, CurRow: Integer;
   StringList: TStringList;
@@ -256,7 +328,6 @@ begin
         JoinedFieldName, ReferencedField, ReferencedTable]);
     Open;
   end;
-  DrawGrid.ColCount := SQLQuery.RecordCount + 1;
   SetLength(ColCaptions, 0);
   SQLQuery.First;
   while not SQLQuery.EOF do
@@ -266,6 +337,7 @@ begin
     ColCaptions[High(ColCaptions)].ID := SQLQuery.Fields.FieldByNumber(2).Value;
     SQLQuery.Next;
   end;
+  DrawGrid.ColCount := Length(ColCaptions) + 1;
 
 
   with SQLQuery do
@@ -277,7 +349,6 @@ begin
     Open;
   end;
   SetLength(RowCaptions, 0);
-  DrawGrid.RowCount := SQLQuery.RecordCount + 1;
   SQLQuery.First;
   while not SQLQuery.EOF do
   begin
@@ -286,6 +357,7 @@ begin
     RowCaptions[High(RowCaptions)].ID := SQLQuery.Fields.FieldByNumber(2).Value;
     SQLQuery.Next;
   end;
+  DrawGrid.RowCount := Length(RowCaptions) + 1;
 
   SetLength(Grid, Length(ColCaptions));
   for i := 0 to High(Grid) do
@@ -293,7 +365,7 @@ begin
 
   for i := 0 to High(Grid) do
     for j := 0 to High(Grid[i]) do
-      Grid[i][j] := TMyCell.Create;
+      Grid[i][j] := TMyCell.Create(i, j, @DGExpandButtonClick);
 
   /////////////
   with SQLQuery do
@@ -327,7 +399,7 @@ begin
               if CheckListBox.Checked[i - 1] then
                 StringList.Add(FieldByName((Fields[i] as TMyJoinedField).JoinedFieldName).Text);
               StringList.Add('-------');
-            Grid[CurCol][CurRow].AddRecord(StringList, FieldByName(Fields[0].Name).AsInteger);
+            Grid[CurCol][CurRow].AddRecord(StringList, FieldByName(Fields[0].Name).AsInteger, @DGEditButtonClick);
           end;
           Next;
         end
@@ -341,10 +413,36 @@ begin
       end;
     end;
   end;
+
+  with DrawGrid do
+  begin
+    DefaultColWidth := 50;
+    for i := 0 to High(Grid) do
+      for j := 0 to High(Grid[i]) do
+        ColWidths[i + 1] := max(ColWidths[i + 1], Grid[i][j].MaxWidth(Canvas) + 2);
+    for i := 0 to High(RowCaptions) do
+      ColWidths[0] := Max(ColWidths[0], Canvas.TextWidth(RowCaptions[i].Name) + 2);
+  end;
   StringList.Free;
 end;
 
-function TForm1.CalcChecked: Integer;
+procedure TScheduleForm.DGEditButtonClick(ACol, ARow, ARecord: Integer);
+begin
+  CreateNewEditForm(CurTable, ftEdit, Grid[ACol][ARow].FRecords[ARecord].FID);
+end;
+
+procedure TScheduleForm.DGExpandButtonClick(ACol, ARow, ARecord: Integer);
+var
+  MaxHeight: Integer;
+begin
+  MaxHeight := Grid[ACol][ARow].FRecords[0].FHeight * Length(Grid[ACol][ARow].FRecords);
+  if DrawGrid.RowHeights[ARow + 1] = MaxHeight then
+    DrawGrid.RowHeights[ARow + 1] := Grid[ACol][ARow].FRecords[0].FHeight
+  else
+    DrawGrid.RowHeights[ARow + 1] := MaxHeight;
+end;
+
+function TScheduleForm.CalcChecked: Integer;
 var
   i: Integer;
 begin

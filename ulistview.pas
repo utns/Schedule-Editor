@@ -41,7 +41,7 @@ type
     procedure SpeedButtonOKClick(Sender: TObject);
     procedure DeleteSQL;
     procedure OpenSQLQuery;
-    procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+    //procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
     procedure SQLQueryBeforeClose(DataSet: TDataSet);
   private
     MainFilter: TMainFilter;
@@ -257,7 +257,7 @@ begin
   SQLQuery.Locate(Tables[Tag].Fields[0].Name, SelectedID, []);
 end;
 
-procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
+{procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
   AFormType: TFormType; AID: Integer);
 var
   i: Integer;
@@ -271,20 +271,20 @@ begin
       end;
   SetLength(EditForms, Length(EditForms) + 1);
   EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
-end;
+end;}
 
 procedure TFormListView.SQLQueryBeforeClose(DataSet: TDataSet);
 begin
   SelectedID := SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value;
 end;
 
-procedure ActivateSQL;
+{procedure ActivateSQL;
 var
   i: Integer;
 begin
   for i := 0 to High(ListViewForms) do
     ListViewForms[i].OpenSQLQuery;
-end;
+end;}
 
 procedure SetLocate(ACurTable, AID: Integer);
 var
@@ -300,7 +300,7 @@ begin
 end;
 
 initialization
-  EActivateSQL := @ActivateSQL;
+  //EActivateSQL := @ActivateSQL;
   ELocate := @SetLocate;
 
 end.

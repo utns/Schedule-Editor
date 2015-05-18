@@ -48,6 +48,7 @@ var
   EditForms: array of TEditForm;
 
 procedure RefreshEditForms;
+procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
 
 implementation
 
@@ -57,6 +58,22 @@ var
 begin
   for i := 0 to High(EditForms) do
     EditForms[i].RefreshEditors;
+end;
+
+procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType;
+  AID: Integer);
+var
+  i: Integer;
+begin
+  if AID <> 0 then
+    for i := 0 to High(EditForms) do
+      if AID = EditForms[i].Tag then
+      begin
+        EditForms[i].ShowOnTop;
+        Exit;
+      end;
+  SetLength(EditForms, Length(EditForms) + 1);
+  EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
 end;
 
 {$R *.lfm}

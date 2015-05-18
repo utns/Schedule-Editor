@@ -97,8 +97,21 @@ end;
 
 procedure TMainForm.MenuItemScheduleClick(Sender: TObject);
 begin
-  Form1.Show;
+  ScheduleForm.Show;
 end;
 
+procedure ActivateSQL;
+var
+  i: Integer;
+begin
+  for i := 0 to High(ListViewForms) do
+    ListViewForms[i].OpenSQLQuery;
+  ScheduleForm.FillGrid;
+  ScheduleForm.Invalidate;
+end;
+
+initialization
+  EActivateSQL := @ActivateSQL;
+
 end.
-
+

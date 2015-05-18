@@ -1,9 +1,9 @@
-object Form1: TForm1
-  Left = 2056
+object ScheduleForm: TScheduleForm
+  Left = 133
   Height = 590
-  Top = 184
+  Top = 91
   Width = 829
-  Caption = 'Form1'
+  Caption = 'Расписание'
   ClientHeight = 590
   ClientWidth = 829
   OnCreate = FormCreate
@@ -120,12 +120,14 @@ object Form1: TForm1
     Top = 136
     Width = 829
     Anchors = [akTop, akLeft, akRight, akBottom]
+    ColCount = 20
     ExtendedSelect = False
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSizing, goColSizing, goSmoothScroll]
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSizing, goColSizing, goThumbTracking, goSmoothScroll]
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
     OnDrawCell = StringGridDrawCell
+    OnMouseDown = DrawGridMouseDown
     OnMouseMove = DrawGridMouseMove
     OnSelectCell = StringGridSelectCell
   end

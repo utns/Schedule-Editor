@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, umain, UDBConnection, UMetadata, UListView, UAbout, USQLQueries,
-  UFilters, UEditForm, UEditors, UScheduleForm;
+  UFilters, UEditForm, UEditors, UScheduleForm, UButtons;
 
 {$R *.res}
 
@@ -20,7 +20,7 @@ begin
   Application.CreateForm(TFormListView, FormListView);
   Application.CreateForm(TFormAbout, FormAbout);
   Application.CreateForm(TEditForm, EditForm);
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TScheduleForm, ScheduleForm);
   Application.Run;
 end.
 

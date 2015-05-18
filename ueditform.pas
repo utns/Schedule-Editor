@@ -37,6 +37,8 @@ type
     { public declarations }
   end;
 
+
+
 type
   TEvent = procedure;
   TELocate = procedure(ACurTable, AID: Integer);
@@ -47,10 +49,51 @@ var
   ELocate: TELocate;
   EditForms: array of TEditForm;
 
+procedure DeleteSql(ACurTable, AID: Integer; ASQLQuery: TSQLQuery);
 procedure RefreshEditForms;
 procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
 
 implementation
+
+procedure DeleteSql(ACurTable, AID: Integer; ASQLQuery: TSQLQuery);
+var
+  i, ButtonSelected: Integer;
+  s: String;
+begin
+  ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
+  if ButtonSelected = mrYes then
+  begin
+    for i := 0 to High(EditForms) do
+      if AID = EditForms[i].Tag then
+      begin
+        MessageDlg('Выбранная запись редактируется.', mtError, [mbOK], 0);
+        EditForms[i].ShowOnTop;
+        Exit;
+      end;
+    try
+      with ASQLQuery do
+      begin
+        s := SQL.Text;
+        Close;
+        with Tables[ACurTable] do
+          SQL.Text := Format('DELETE FROM %s WHERE %s = %s;', [Name, Fields[0].Name, IntToStr(AID)]);
+        ExecSQL;
+        DataModuleMain.SQLTransaction.Commit;
+        SQL.Clear;
+        SQL.AddStrings(s);
+        EActivateSQL;
+      end;
+    except
+      on E: EDatabaseError do
+      begin
+        MessageDlg('Нельзя удалить внешний ключ.', mtError, [mbOK], 0);
+        ASQLQuery.SQL.Text := s;
+        //OpenSQLQuery;
+      end;
+    end;
+    RefreshEditForms
+  end;
+end;
 
 procedure RefreshEditForms;
 var

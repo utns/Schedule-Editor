@@ -1,7 +1,7 @@
 object ScheduleForm: TScheduleForm
-  Left = 133
+  Left = 1937
   Height = 590
-  Top = 91
+  Top = 10
   Width = 829
   Caption = 'Расписание'
   ClientHeight = 590
@@ -104,6 +104,7 @@ object ScheduleForm: TScheduleForm
       BorderSpacing.Bottom = 5
       ItemHeight = 0
       MultiSelect = True
+      OnItemClick = CheckListBoxItemClick
       TabOrder = 3
     end
   end
@@ -120,7 +121,7 @@ object ScheduleForm: TScheduleForm
     Top = 136
     Width = 829
     Anchors = [akTop, akLeft, akRight, akBottom]
-    ColCount = 20
+    ColCount = 1
     ExtendedSelect = False
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSizing, goColSizing, goThumbTracking, goSmoothScroll]
     ParentShowHint = False

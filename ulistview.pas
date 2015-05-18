@@ -39,7 +39,7 @@ type
     procedure SpeedButtonDeleteClick(Sender: TObject);
     procedure SpeedButtonEditClick(Sender: TObject);
     procedure SpeedButtonOKClick(Sender: TObject);
-    procedure DeleteSQL;
+    //procedure DeleteSQL;
     procedure OpenSQLQuery;
     //procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
     procedure SQLQueryBeforeClose(DataSet: TDataSet);
@@ -185,8 +185,11 @@ procedure TFormListView.SpeedButtonDeleteClick(Sender: TObject);
 var
   ButtonSelected, i: Integer;
 begin
-  ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
+  DeleteSql(Self.Tag, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value, SQLQuery);
+  OpenSQLQuery;
+  {ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
   if ButtonSelected = mrYes then
+  begin
     for i := 0 to High(EditForms) do
       if SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value = EditForms[i].Tag then
       begin
@@ -194,8 +197,8 @@ begin
         EditForms[i].ShowOnTop;
         Exit;
       end;
-  DeleteSQL;
-  RefreshEditForms;
+    DeleteSQL;
+  end;}
 end;
 
 procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
@@ -222,7 +225,7 @@ begin
   end;
 end;
 
-procedure TFormListView.DeleteSQL;
+{procedure TFormListView.DeleteSQL;
 var
   s, id: String;
 begin
@@ -248,7 +251,8 @@ begin
       OpenSQLQuery;
     end;
   end;
-end;
+  RefreshEditForms;
+end;}
 
 procedure TFormListView.OpenSQLQuery;
 begin
@@ -257,34 +261,10 @@ begin
   SQLQuery.Locate(Tables[Tag].Fields[0].Name, SelectedID, []);
 end;
 
-{procedure TFormListView.CreateNewEditForm(ACurTable: Integer;
-  AFormType: TFormType; AID: Integer);
-var
-  i: Integer;
-begin
-  if AID <> 0 then
-    for i := 0 to High(EditForms) do
-      if AID = EditForms[i].Tag then
-      begin
-        EditForms[i].ShowOnTop;
-        Exit;
-      end;
-  SetLength(EditForms, Length(EditForms) + 1);
-  EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
-end;}
-
 procedure TFormListView.SQLQueryBeforeClose(DataSet: TDataSet);
 begin
   SelectedID := SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value;
 end;
-
-{procedure ActivateSQL;
-var
-  i: Integer;
-begin
-  for i := 0 to High(ListViewForms) do
-    ListViewForms[i].OpenSQLQuery;
-end;}
 
 procedure SetLocate(ACurTable, AID: Integer);
 var
@@ -300,7 +280,6 @@ begin
 end;
 
 initialization
-  //EActivateSQL := @ActivateSQL;
   ELocate := @SetLocate;
 
 end.

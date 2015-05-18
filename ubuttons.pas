@@ -39,7 +39,30 @@ type
     procedure Print(ACanvas: TCanvas; AX, AY: Integer);
   end;
 
+  { TDeleteButton }
+
+  TDeleteButton = class(TMainButton)
+  public
+    constructor Create(ACol, ARow, ARecord: Integer);
+    procedure Print(ACanvas: TCanvas; AX, AY: Integer);
+  end;
+
 implementation
+
+{ TDeleteButton }
+
+constructor TDeleteButton.Create(ACol, ARow, ARecord: Integer);
+begin
+  inherited Create(ACol, ARow, ARecord);
+  FImage.LoadFromFile('Icons/SDelete.png');
+end;
+
+procedure TDeleteButton.Print(ACanvas: TCanvas; AX, AY: Integer);
+begin
+  FX := AX - (FImage.Width + 2) * 2;
+  FY := AY + 2;
+  ACanvas.Draw(FX, FY, FImage);
+end;
 
 { TExpandButton }
 
@@ -70,7 +93,6 @@ begin
   FY := AY + 2;
   ACanvas.Draw(FX, FY, FImage);
 end;
-
 
 { TMainButton }
 

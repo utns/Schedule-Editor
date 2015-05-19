@@ -23,7 +23,7 @@ type
     procedure MenuItemAboutClick(Sender: TObject);
     procedure MenuItemClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
-    function IsFormOpen(AName: String): Boolean;
+    //function IsFormOpen(AName: String): Boolean;
     procedure MenuItemScheduleClick(Sender: TObject);
   private
     { private declarations }
@@ -67,12 +67,14 @@ end;
 
 procedure TMainForm.MenuItemClick(Sender: TObject);
 begin
-  if not(IsFormOpen((Sender as TMenuItem).Name)) then
+  with (Sender as TMenuItem) do
+    CreateNewListViewForm(Name, Caption, Tag);
+  {if not(IsFormOpen((Sender as TMenuItem).Name)) then
   begin
     SetLength(ListViewForms, Length(ListViewForms) + 1);
     with (Sender as TMenuItem) do
       ListViewForms[High(ListViewForms)] := TFormListView.Create(Name, Caption, Tag);
-  end;
+  end;}
 end;
 
 procedure TMainForm.MenuItemExitClick(Sender: TObject);
@@ -81,7 +83,7 @@ begin
     MainForm.Close;
 end;
 
-function TMainForm.IsFormOpen(AName: String): Boolean;
+{function TMainForm.IsFormOpen(AName: String): Boolean;
 var
   i: Integer;
 begin
@@ -93,7 +95,7 @@ begin
       ListViewForms[i].ShowOnTop;
       Break;
     end;
-end;
+end;}
 
 procedure TMainForm.MenuItemScheduleClick(Sender: TObject);
 begin

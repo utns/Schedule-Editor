@@ -12,13 +12,14 @@ type
 
   { TBasicFilter }
 
-  TBasicFilter = class
+  TBasicFilter = class(TPersistent)
   private
-    FSpeedButton: TSpeedButton;
+    FApplyButton: TSpeedButton;
     procedure Change(Sender: TObject);
   public
-    constructor Create(ASpeedButton: TSpeedButton);
+    constructor Create(AApplyButton: TSpeedButton);
     constructor Free; virtual;
+    property ApplyButton: TSpeedButton write FApplyButton;
   end;
 
   { TCBColumnName }
@@ -28,9 +29,10 @@ type
     FComboBoxColumnName: TComboBox;
     FStringList: TStringList;
   public
-    constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
+    constructor Create(AWinControl: TWinControl; ACurTable: Integer; AApplyButton: TSpeedButton);
     constructor Free; override;
     function GetColumn: Integer;
+    procedure SetColumn(AValue: Integer);
   end;
 
   { TCBFilterType }
@@ -39,9 +41,10 @@ type
   private
     FComboBoxFilterType: TComboBox;
   public
-    constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
+    constructor Create(AWinControl: TWinControl; ACurTable: Integer; AApplyButton: TSpeedButton);
     constructor Free; override;
     function GetFilterType: String;
+    procedure SetFilterType(AValue: String);
   end;
 
   { TCBAndOr }
@@ -53,6 +56,7 @@ type
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
     constructor Free; override;
     function GetFilterAndOr: String;
+    procedure SetFilterAndOr(AValue: String);
   end;
 
   { TEFilterValue }
@@ -61,9 +65,10 @@ type
   private
     FEditFilterValue: TEdit;
   public
-    constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
+    constructor Create(AWinControl: TWinControl; ACurTable: Integer; AApplyButton: TSpeedButton);
     constructor Free; override;
     function GetFilterValue: String;
+    procedure SetFilterValue(AValue: String);
   end;
 
   { TBBDeleteFilter }
@@ -71,24 +76,26 @@ type
   TBBDeleteFilter = class(TBasicFilter)
   public
     FBitBtnDelete: TBitBtn;
-    constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton);
+    constructor Create(AWinControl: TWinControl; ACurTable: Integer; AApplyButton: TSpeedButton);
     Constructor Free; override;
   end;
 
   { TPanelFilter }
 
-  TPanelFilter = class
+  TPanelFilter = class(TPersistent)
   private
     FPanel: TPanel;
     FCBColumnName: TCBColumnName;
     FCBFilterType: TCBFilterType;
     FCBAndOr: TCBAndOr;
     FEFilterValue: TEFilterValue;
+    procedure SetApplyButton(AValue: TSpeedButton);
     procedure SetTag(AValue: PtrInt);
     procedure SetTop(AValue: Integer);
   public
     FSBDeleteFilter: TBBDeleteFilter;
-    Constructor Create(AWinControl: TWinControl; ACurTable: Integer; ASpeedButton: TSpeedButton; ATag: Integer);
+    Constructor Create(AWinControl: TWinControl; ACurTable: Integer; AApplyButton: TSpeedButton; ATag: Integer);
+    constructor Create;
     Constructor Free;
     function GetColumn: Integer;
     function GetFilterType: String;
@@ -96,13 +103,14 @@ type
     function GetFilterAndOr: String;
     property Tag: PtrInt write SetTag;
     property Top: Integer write SetTop;
+    property ApplyButton: TSpeedButton write SetApplyButton;
+    procedure Assign (Source : TPersistent); override;
   end;
 
   { TMainFilter }
 
   TMainFilter = class
   private
-
     FCurTable: Integer;
     FSpeedButton: TSpeedButton;
     procedure ButtonDeleteFilterMouseUp(Sender: TObject;
@@ -113,6 +121,10 @@ type
       ACurTable: Integer; ASpeedButton: TSpeedButton);
     procedure SetParams(ASQLQuery: TSQLQuery);
     function CreateSqlFilter: String;
+    procedure CopyFilters(AWinControl: TWinControl; ACurTable: Integer;
+      ASpeedButton: TSpeedButton; AFilters: Array of TPanelFilter);
+    procedure AddFilter(AWinControl: TWinControl; ACurTable: Integer;
+      ASpeedButton: TSpeedButton; AColumn: Integer; AFilterValue: String);
     constructor Create;
   end;
 
@@ -217,6 +229,37 @@ begin
   end;
 end;
 
+procedure TMainFilter.CopyFilters(AWinControl: TWinControl; ACurTable: Integer;
+  ASpeedButton: TSpeedButton; AFilters: array of TPanelFilter);
+var
+  i: Integer;
+begin
+  for i := 0 to High(AFilters) do
+  begin
+    AddNewFilters(AWinControl, ACurTable, ASpeedButton);
+    with FFilters[High(FFilters)] do
+    begin
+      if i <> 0 then
+        FCBAndOr.SetFilterAndOr(AFilters[i].FCBAndOr.GetFilterAndOr);
+      FEFilterValue.SetFilterValue(AFilters[i].FEFilterValue.GetFilterValue);
+      FCBFilterType.SetFilterType(AFilters[i].FCBFilterType.GetFilterType);
+      FCBColumnName.SetColumn(AFilters[i].FCBColumnName.GetColumn);
+    end;
+  end;
+end;
+
+procedure TMainFilter.AddFilter(AWinControl: TWinControl; ACurTable: Integer;
+  ASpeedButton: TSpeedButton; AColumn: Integer; AFilterValue: String);
+begin
+  AddNewFilters(AWinControl, ACurTable, ASpeedButton);
+  with FFilters[High(FFilters)] do
+  begin
+    FCBColumnName.SetColumn(AColumn);
+    FEFilterValue.SetFilterValue(AFilterValue);
+    FCBFilterType.SetFilterType('=');
+  end;
+end;
+
 constructor TMainFilter.Create;
 begin
   inherited;
@@ -230,13 +273,21 @@ begin
   FPanel.Tag := AValue;
 end;
 
+procedure TPanelFilter.SetApplyButton(AValue: TSpeedButton);
+begin
+  FCBColumnName.ApplyButton := AValue;
+  FCBFilterType.ApplyButton := AValue;
+  FCBAndOr.ApplyButton := AValue;
+  FEFilterValue.ApplyButton := AValue;
+end;
+
 procedure TPanelFilter.SetTop(AValue: Integer);
 begin
   FPanel.Top := AValue;
 end;
 
 constructor TPanelFilter.Create(AWinControl: TWinControl; ACurTable: Integer;
-  ASpeedButton: TSpeedButton; ATag: Integer);
+  AApplyButton: TSpeedButton; ATag: Integer);
 begin
   FPanel := TPanel.Create(AWinControl);
   with FPanel do
@@ -250,12 +301,17 @@ begin
   end;
   if ATag > 0 then
   begin
-    FCBAndOr := TCBAndOr.Create(FPanel, ACurTable, ASpeedButton);
-    FSBDeleteFilter := TBBDeleteFilter.Create(FPanel, ACurTable, ASpeedButton);
+    FCBAndOr := TCBAndOr.Create(FPanel, ACurTable, AApplyButton);
+    FSBDeleteFilter := TBBDeleteFilter.Create(FPanel, ACurTable, AApplyButton);
   end;
-  FCBColumnName := TCBColumnName.Create(FPanel, ACurTable, ASpeedButton);
-  FCBFilterType := TCBFilterType.Create(FPanel, ACurTable, ASpeedButton);
-  FEFilterValue := TEFilterValue.Create(FPanel, ACurTable, ASpeedButton);
+  FCBColumnName := TCBColumnName.Create(FPanel, ACurTable, AApplyButton);
+  FCBFilterType := TCBFilterType.Create(FPanel, ACurTable, AApplyButton);
+  FEFilterValue := TEFilterValue.Create(FPanel, ACurTable, AApplyButton);
+end;
+
+constructor TPanelFilter.Create;
+begin
+  inherited;
 end;
 
 constructor TPanelFilter.Free;
@@ -283,15 +339,33 @@ begin
   Result := FCBAndOr.GetFilterAndOr;
 end;
 
+procedure TPanelFilter.Assign(Source: TPersistent);
+begin
+    if Source is TPanelFilter then
+    begin
+          {FPanel: TPanel;
+    FCBColumnName: TCBColumnName;
+    FCBFilterType: TCBFilterType;
+    FCBAndOr: TCBAndOr;
+    FEFilterValue: TEFilterValue;}
+        FPanel.Assign(TPanelFilter(Source).FPanel);
+        FCBColumnName.Assign(TPanelFilter(Source).FCBColumnName);
+        FCBFilterType.Assign(TPanelFilter(Source).FCBFilterType);
+        FCBAndOr.Assign(TPanelFilter(Source).FCBAndOr);
+        FEFilterValue.Assign(TPanelFilter(Source).FEFilterValue);
+    end
+    else inherited;
+end;
+
 { TBBDeleteFilter }
 
 constructor TBBDeleteFilter.Create(AWinControl: TWinControl;
-  ACurTable: Integer; ASpeedButton: TSpeedButton);
+  ACurTable: Integer; AApplyButton: TSpeedButton);
 var
   PNG: TPortableNetworkGraphic;
   BMP: TBitmap;
 begin
-  Inherited Create(ASpeedButton);
+  Inherited Create(AApplyButton);
   FBitBtnDelete := TBitBtn.Create(AWinControl);
   with FBitBtnDelete do
   begin
@@ -355,14 +429,22 @@ begin
     Result := 'OR';
 end;
 
+procedure TCBAndOr.SetFilterAndOr(AValue: String);
+begin
+  case AValue of
+    'AND': FComboBoxAndOr.ItemIndex := 0;
+    'OR': FComboBoxAndOr.ItemIndex := 1;
+  end;
+end;
+
 { TCBColumnName }
 
 constructor TCBColumnName.Create(AWinControl: TWinControl; ACurTable: Integer;
-  ASpeedButton: TSpeedButton);
+  AApplyButton: TSpeedButton);
 var
   i: Integer;
 begin
-  Inherited Create(ASpeedButton);
+  Inherited Create(AApplyButton);
   FComboBoxColumnName := TComboBox.Create(AWinControl);
   FStringList := TStringList.Create;
   with FComboBoxColumnName do
@@ -403,12 +485,25 @@ begin
   Result := StrToInt(FStringList.Strings[FComboBoxColumnName.ItemIndex]);
 end;
 
+procedure TCBColumnName.SetColumn(AValue: Integer);
+var
+  i: Integer;
+  id: String;
+begin
+  id := IntToStr(AValue);
+  for i := 0 to FStringList.Count - 1 do
+  begin
+    if FStringList.Strings[i] = id then
+       FComboBoxColumnName.ItemIndex := i;
+  end;
+end;
+
 { TCBFilterType }
 
 constructor TCBFilterType.Create(AWinControl: TWinControl; ACurTable: Integer;
-  ASpeedButton: TSpeedButton);
+  AApplyButton: TSpeedButton);
 begin
-  Inherited Create(ASpeedButton);
+  Inherited Create(AApplyButton);
   FComboBoxFilterType := TComboBox.Create(AWinControl);
   with FComboBoxFilterType do
   begin
@@ -445,11 +540,24 @@ begin
   end
 end;
 
+procedure TCBFilterType.SetFilterType(AValue: String);
+var
+  i: Integer;
+begin
+  case AValue of
+    'Substring': AValue := 'Содержит';
+    'Begin': AValue := 'Начинается с';
+  end;
+  for i := 0 to FComboBoxFilterType.Items.Count - 1 do
+    if AValue = FComboBoxFilterType.Items[i] then
+      FComboBoxFilterType.ItemIndex := i;
+end;
+
 { TEFilterValue }
 constructor TEFilterValue.Create(AWinControl: TWinControl; ACurTable: Integer;
-  ASpeedButton: TSpeedButton);
+  AApplyButton: TSpeedButton);
 begin
-  Inherited Create(ASpeedButton);
+  Inherited Create(AApplyButton);
   FEditFilterValue := TEdit.Create(AWinControl);
   with FEditFilterValue do
   begin
@@ -472,16 +580,21 @@ begin
   Result := FEditFilterValue.Text;
 end;
 
+procedure TEFilterValue.SetFilterValue(AValue: String);
+begin
+  FEditFilterValue.Text := AValue;
+end;
+
 { TBasicFilter }
 
 procedure TBasicFilter.Change(Sender: TObject);
 begin
-  FSpeedButton.Down := False;
+  FApplyButton.Down := False;
 end;
 
-constructor TBasicFilter.Create(ASpeedButton: TSpeedButton);
+constructor TBasicFilter.Create(AApplyButton: TSpeedButton);
 begin
-  FSpeedButton := ASpeedButton;
+  FApplyButton := AApplyButton;
 end;
 
 constructor TBasicFilter.Free;

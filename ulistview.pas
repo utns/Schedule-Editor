@@ -29,6 +29,8 @@ type
     SQLQuery: TSQLQuery;
     procedure ButtonAddFilterClick(Sender: TObject);
     constructor Create(AName, ACaption: String; ATag: Integer);
+    constructor Create(AName, ACaption: String; ATag: Integer; AFilters: array of TPanelFilter;
+      AColumn1, AColumn2: Integer; AFilterValue1, AFilterValue2: String);
     procedure DBGridCellClick(Column: TColumn);
     procedure DBGridDblClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
@@ -53,11 +55,18 @@ type
 
   end;
 
+  procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer);
+  procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer;
+    AFilters: array of TPanelFilter; AColumn1, AColumn2: Integer;
+    AFilterValue1, AFilterValue2: String);
+
 var
   FormListView: TFormListView;
   ListViewForms: array of TFormListView;
 
 implementation
+
+
 
 {$R *.lfm}
 
@@ -65,7 +74,6 @@ implementation
 
 constructor TFormListView.Create(AName, ACaption: String; ATag: Integer);
 begin
-
   Inherited Create(Application);
   Caption := ACaption;
   Name := AName;
@@ -77,6 +85,30 @@ begin
   SetTableColumns;
   MainFilter := TMainFilter.Create;
   MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
+  Show;
+  CurSortType := 0;
+  CurSortColumn := -1;
+end;
+
+constructor TFormListView.Create(AName, ACaption: String; ATag: Integer;
+  AFilters: array of TPanelFilter; AColumn1, AColumn2: Integer; AFilterValue1,
+  AFilterValue2: String);
+begin
+  Inherited Create(Application);
+  Caption := ACaption;
+  Name := AName;
+  Tag := ATag;
+  SQLQuery.Close;
+  SQLQuery.SQL.Clear;
+  MainFilter := TMainFilter.Create;
+  MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn1, AFilterValue1);
+  MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn2, AFilterValue2);
+  MainFilter.CopyFilters(ScrollBox, Tag, SpeedButtonOK, AFilters);
+  SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery(-1, -1, ''));//MainFilter.CreateSqlFilter));
+  SQLQuery.Open;
+  SetTableColumns;
+  //MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
+  SpeedButtonOKClick(Self);
   Show;
   CurSortType := 0;
   CurSortColumn := -1;
@@ -97,14 +129,14 @@ procedure TFormListView.DBGridTitleClick(Column: TColumn);
 begin
   CellDblClick := False;
   Mouse.CursorPos := Point(Mouse.CursorPos.x + 1, Mouse.CursorPos.y);
-  if (CurSortColumn <> Column.Index) and (CurSortColumn <> -1) then
+  if (CurSortColumn <> Column.Tag) and (CurSortColumn <> -1) then
   begin
-    CurSortColumn := Column.Index;
+    CurSortColumn := Column.Tag;
     CurSortType := 0;
   end;
-  if (CurSortColumn = Column.Index) or (CurSortColumn = -1) then
+  if (CurSortColumn = Column.Tag) or (CurSortColumn = -1) then
   begin
-    CurSortColumn := Column.Index;
+    CurSortColumn := Column.Tag;
     CurSortType := (CurSortType + 1) mod 3;
     SQLQuery.Close;
     SQLQuery.SQL.Clear;
@@ -156,6 +188,7 @@ begin
           DBGrid.Columns[i].Title.Caption := Caption;
           DBGrid.Columns[i].Width := Width;
           DBGrid.Columns[i].Visible := Visible;
+          DBGrid.Columns[i].Tag := j;
           DBGrid.Columns[i].Title.ImageIndex := -1;
         end;
 
@@ -166,6 +199,7 @@ begin
           DBGrid.Columns[i].Title.Caption := JoinedFieldCaption;
           DBGrid.Columns[i].Width := JoinedFieldWidth;
           DBGrid.Columns[i].Visible := JoinedVisible;
+          DBGrid.Columns[i].Tag := j;
           DBGrid.Columns[i].Title.ImageIndex := -1;
         end;
     end;
@@ -222,6 +256,41 @@ begin
     MainFilter.SetParams(SQLQuery);
     SQLQuery.Open;
     SetTableColumns;
+  end;
+end;
+
+function IsFormOpen(AName: String): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 To High(ListViewForms) do
+    if (ListViewForms[i].Name = AName) then
+    begin
+      Result := True;
+      ListViewForms[i].ShowOnTop;
+      Break;
+    end;
+end;
+
+procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer);
+begin
+  if not(IsFormOpen(AName)) then
+  begin
+    SetLength(ListViewForms, Length(ListViewForms) + 1);
+    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag);
+  end;
+end;
+
+procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer;
+  AFilters: array of TPanelFilter; AColumn1, AColumn2: Integer; AFilterValue1,
+  AFilterValue2: String);
+begin
+  if not(IsFormOpen(AName)) then
+  begin
+    SetLength(ListViewForms, Length(ListViewForms) + 1);
+    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag,
+    AFilters, AColumn1, AColumn2, AFilterValue1, AFilterValue2);
   end;
 end;
 

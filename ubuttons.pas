@@ -47,7 +47,30 @@ type
     procedure Print(ACanvas: TCanvas; AX, AY: Integer);
   end;
 
+  { TTableButton }
+
+  TTableButton = class(TMainButton)
+  public
+    constructor Create(ACol, ARow, ARecord: Integer);
+    procedure Print(ACanvas: TCanvas; AX, AY: Integer);
+  end;
+
 implementation
+
+{ TTableButton }
+
+constructor TTableButton.Create(ACol, ARow, ARecord: Integer);
+begin
+  inherited Create(ACol, ARow, ARecord);
+  FImage.LoadFromFile('Icons/STable.png');
+end;
+
+procedure TTableButton.Print(ACanvas: TCanvas; AX, AY: Integer);
+begin
+  FX := AX - (FImage.Width + 2) * 3;
+  FY := AY + 2;
+  ACanvas.Draw(FX, FY, FImage);
+end;
 
 { TDeleteButton }
 

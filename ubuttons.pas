@@ -23,6 +23,14 @@ type
     procedure CheckClick(AX, AY: Integer);
   end;
 
+  { TAddButton }
+
+  TAddButton = class(TMainButton)
+  public
+    constructor Create(ACol, ARow, ARecord: Integer);
+    procedure Print(ACanvas: TCanvas; AX, AY: Integer);
+  end;
+
   { TEditButton }
 
   TEditButton = class(TMainButton)
@@ -57,6 +65,21 @@ type
 
 implementation
 
+{ TAddButton }
+
+constructor TAddButton.Create(ACol, ARow, ARecord: Integer);
+begin
+  inherited Create(ACol, ARow, ARecord);
+  FImage.LoadFromFile('Icons/SAdd.png');
+end;
+
+procedure TAddButton.Print(ACanvas: TCanvas; AX, AY: Integer);
+begin
+  FX := AX - (FImage.Width + 2) * 3;
+  FY := AY + 2;
+  ACanvas.Draw(FX, FY, FImage);
+end;
+
 { TTableButton }
 
 constructor TTableButton.Create(ACol, ARow, ARecord: Integer);
@@ -67,7 +90,7 @@ end;
 
 procedure TTableButton.Print(ACanvas: TCanvas; AX, AY: Integer);
 begin
-  FX := AX - (FImage.Width + 2) * 3;
+  FX := AX - (FImage.Width + 2) * 4;
   FY := AY + 2;
   ACanvas.Draw(FX, FY, FImage);
 end;
@@ -82,7 +105,7 @@ end;
 
 procedure TDeleteButton.Print(ACanvas: TCanvas; AX, AY: Integer);
 begin
-  FX := AX - (FImage.Width + 2) * 2;
+  FX := AX - (FImage.Width + 2);
   FY := AY + 2;
   ACanvas.Draw(FX, FY, FImage);
 end;
@@ -112,7 +135,7 @@ end;
 
 procedure TEditButton.Print(ACanvas: TCanvas; AX, AY: Integer);
 begin
-  FX := AX - FImage.Width - 2;
+  FX := AX - (FImage.Width + 2) * 2;
   FY := AY + 2;
   ACanvas.Draw(FX, FY, FImage);
 end;

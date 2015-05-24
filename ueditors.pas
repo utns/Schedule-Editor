@@ -35,6 +35,7 @@ type
       AFormType: TFormType; ASourceSQLQuery: TSQLQuery);
     function GetValue: String; override;
     function GetText: String; override;
+    procedure SetValue(AID: String);
     procedure Refresh; override;
   end;
 
@@ -134,8 +135,8 @@ begin
     Transaction := DataModuleMain.SQLTransaction;
     SQL.Clear;
     with (Tables[ACurTable].Fields[ACurField] as TMyJoinedField) do
-      SQL.AddStrings(Format('SELECT %s, %s FROM %s ORDER BY 2', [ReferencedField,
-        JoinedFieldName, ReferencedTable]));
+      SQL.AddStrings(Format('SELECT %s, %s, %s FROM %s ORDER BY 3', [ReferencedField,
+        JoinedFieldName, FieldOrderBy(ReferencedTable), ReferencedTable]));
     Open;
   end;
   FDataSource := TDataSource.Create(AWinControl);
@@ -202,6 +203,15 @@ end;
 function TMyLookupCB.GetText: String;
 begin
   Result := FDBLookupComboBox.Items[FDBLookupComboBox.ItemIndex];
+end;
+
+procedure TMyLookupCB.SetValue(AID: String);
+var
+  i: Integer;
+begin
+  for i := 0 to FStringList.Count - 1 do
+    if FStringList.Strings[i] = AID then
+      FDBLookupComboBox.ItemIndex := i;
 end;
 
 procedure TMyLookupCB.Refresh;

@@ -28,6 +28,7 @@ type
     function IsEqualValues(ATag: Integer): Boolean;
     function IsEmptyFields: Boolean;
     procedure RefreshEditors;
+    procedure SetColRowCB(AColIndex, AColID, ARowIndex, ARowID: Integer);
   private
     FormType: TFormType;
     CurTable: Integer;
@@ -317,6 +318,12 @@ begin
   for i := 0 to High(Editors) do
     if Editors[i] is TMyLookupCB then
       Editors[i].Refresh;
+end;
+
+procedure TEditForm.SetColRowCB(AColIndex, AColID, ARowIndex, ARowID: Integer);
+begin
+  (Editors[ARowIndex] as TMyLookupCB).SetValue(IntToStr(ARowID));
+  (Editors[AColIndex] as TMyLookupCB).SetValue(IntToStr(AColID));
 end;
 
 end.

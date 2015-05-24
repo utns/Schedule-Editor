@@ -51,9 +51,10 @@ type
   private
     FName, FCaption: String;
     FFields: array of TMyField;
+    FOrderBy: Integer;
     function GetField(Index: Integer): TMyField;
   public
-    constructor Create(AName, ACaption: String);
+    constructor Create(AName, ACaption: String; AOrderBy: Integer);
     function CreateSqlQuery(ASortColumn, ATypeSort: Integer; AWhere: String): String;
     function SqlSelect: String;
     function SqlInnerJoin: String;
@@ -66,19 +67,22 @@ type
     property Name: String read FName;
     property Caption: String read FCaption;
     property Fields[Index: Integer]: TMyField read GetField;
+    property FieldOrderByINdex: Integer read FOrderBy;
   end;
 
   var
     Tables: array of TMyTable;
 
+  function FieldOrderBy(ATable: string): String;
+
 implementation
 
-function RegisterTable(AName, ACaption: String): TMyTable;
+function RegisterTable(AName, ACaption: String; AOrderBy: Integer): TMyTable;
 var
   ATable: TMyTable;
 begin
   SetLength(Tables, Length(Tables) + 1);
-  ATable := TMyTable.Create(AName, ACaption);
+  ATable := TMyTable.Create(AName, ACaption, AOrderBy);
   Tables[High(Tables)] := ATable;
   Result := ATable;
 end;
@@ -108,6 +112,21 @@ begin
       Tables[i].AddNewField(AName, ACaption, AWidth, AVisible, AReferencedTable, AReferencedField,
         AJoinedFieldName, AJoinedFieldCaption, AJoinedWidth, AJoinedVisible);
       Break;
+    end;
+end;
+
+function FieldOrderBy(ATable: String): String;
+var
+  i: Integer;
+begin
+  for i := 0 to High(Tables) do
+    with Tables[i] do
+    begin
+      if Name = ATable then
+      begin
+        Result := Fields[FieldOrderByINdex].Name;
+        Exit;
+      end;
     end;
 end;
 
@@ -145,11 +164,12 @@ begin
   Result := FFields[Index];
 end;
 
-constructor TMyTable.Create(AName, ACaption: String);
+constructor TMyTable.Create(AName, ACaption: String; AOrderBy: Integer);
 begin
   Inherited Create;
   FName := AName;
   FCaption := ACaption;
+  FOrderBy := AOrderBy;
 end;
 
 function TMyTable.CreateSqlQuery(ASortColumn, ATypeSort: Integer; AWhere: String
@@ -203,7 +223,7 @@ begin
   if (ASortColumn >= 0) and (ATypeSort > 0) then
   begin
     if (Fields[ASortColumn] is TMyJoinedField) then
-      Result := ' ORDER BY ' + (Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
+      Result := ' ORDER BY ' + FieldOrderBy((Fields[ASortColumn] as TMyJoinedField).ReferencedTable)//(Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
     else
       Result := ' ORDER BY ' + Fields[ASortColumn].Name;
     if ATypeSort = 2 then
@@ -234,45 +254,45 @@ end;
 
 
 initialization
-  with RegisterTable('EducActivities', 'Учебная деятельность') do
+  with RegisterTable('EducActivities', 'Учебная деятельность', 1) do
   begin
     AddNewField('EducID', 'ИД', 35, False);
     AddNewField('EducName', 'Название', 100, True);
   end;
 
-  with RegisterTable('Teachers', 'Преподаватели') do
+  with RegisterTable('Teachers', 'Преподаватели', 1) do
   begin
     AddNewField('TeacherID', 'ИД', 35, False);
     AddNewField('TeacherInitials', 'Ф.И.О. преподавателя', 250, True);
   end;
 
-  with RegisterTable('Groups', 'Группы') do
+  with RegisterTable('Groups', 'Группы', 1) do
   begin
     AddNewField('GroupID', 'ИД', 35, False);
     AddNewField('GroupNumber', 'Номер', 55, True);
     AddNewField('GroupName', 'Название группы', 285, True);
   end;
 
-  with RegisterTable('Students', 'Студенты') do
+  with RegisterTable('Students', 'Студенты', 1) do
   begin
     AddNewField('StudentID', 'ИД', 35, False);
     AddNewField('StudentInitials', 'Ф.И.О. студента', 250, True);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
   end;
 
-  with RegisterTable('Subjects', 'Предметы') do
+  with RegisterTable('Subjects', 'Предметы', 1) do
   begin
     AddNewField('SubjectID', 'ИД', 35, False);
     AddNewField('SubjectName', 'Название предмета', 250, True);
   end;
 
-  with RegisterTable('Audiences', 'Аудитории') do
+  with RegisterTable('Audiences', 'Аудитории', 1) do
   begin
     AddNewField('AudienceID', 'ИД', 35, False);
     AddNewField('AudienceNumber', 'Номер', 150, True);
   end;
 
-  with RegisterTable('Pairs', 'Пары') do
+  with RegisterTable('Pairs', 'Пары', 3) do
   begin
     AddNewField('PairID', 'ИД', 35, False);
     AddNewField('PairBegin', 'Начало', 55, True);
@@ -280,14 +300,14 @@ initialization
     AddNewField('PairNumber', 'Номер', 45, True);
   end;
 
-  with RegisterTable('WeekDays', 'Дни недели') do
+  with RegisterTable('WeekDays', 'Дни недели', 2) do
   begin
     AddNewField('WeekDayID', 'ИД', 35, False);
     AddNewField('WeekDayName', 'Название', 90, True);
     AddNewField('WeekDayNumber', 'Номер', 60, True);
   end;
 
-  with RegisterTable('Schedules', 'Расписание') do
+  with RegisterTable('Schedules', 'Расписание', 0) do
   begin
     AddNewField('ScheduleID', 'ИД', 35, False);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
@@ -299,14 +319,14 @@ initialization
     AddNewField('AudienceID', 'ИД аудитории', 75, False, 'Audiences', 'AudienceID', 'AudienceNumber', 'Аудитория', 70, True);
   end;
 
-  with RegisterTable('Teachers_Subjects', 'Предметы преподавателя') do
+  with RegisterTable('Teachers_Subjects', 'Предметы преподавателя', 0) do
   begin
     AddNewField('ID', 'ИД', 35, False);
     AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
     AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
   end;
 
-  with RegisterTable('Group_Subjects', 'Предметы групп') do
+  with RegisterTable('Group_Subjects', 'Предметы групп', 0) do
   begin
     AddNewField('ID', 'ИД', 35, False);
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);

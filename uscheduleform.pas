@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, sqldb, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  ExtCtrls, StdCtrls, Buttons, CheckLst, UMetadata, UFilters, math, UButtons,
-  UEditForm, UListView;
+  ExtCtrls, StdCtrls, Buttons, CheckLst, DbCtrls, UMetadata, UFilters, math,
+  UButtons, UEditForm, UListView;
 
 type
 
@@ -42,6 +42,7 @@ type
     FCol, FRow: Integer;
     FExpandButton: TExpandButton;
     FTableButton: TTableButton;
+    FAddButton: TAddButton;
   public
     procedure AddRecord(AStringList: TStringList; AID: Integer;
       AEditButtonOnClick, ADeleteButtonOnClick: TEOnClick);
@@ -49,14 +50,18 @@ type
     procedure CheckClick(AX, AY, ATop, AHeight: Integer);
     function GetHint: String;
     function MaxWidth(ACanvas: TCanvas): Integer;
-    constructor Create(ACol, ARow: Integer; AExpandButtonOnClick, ATableButtonOnClick: TEOnClick);
+    constructor Create(ACol, ARow: Integer; AExpandButtonOnClick, ATableButtonOnClick,
+      AAddButtonOnClick: TEOnClick);
   end;
 
   TScheduleForm = class(TForm)
     CBColName: TComboBox;
     CBRowName: TComboBox;
     CheckListBox: TCheckListBox;
+    CBSortType: TComboBox;
+    CBOrderBy: TComboBox;
     DrawGrid: TDrawGrid;
+    LabelOrderBy: TLabel;
     LabelColName: TLabel;
     LabelRowName: TLabel;
     Panel: TPanel;
@@ -81,8 +86,10 @@ type
     procedure DGExpandButtonClick(ACol, ARow, ARecord: Integer);
     procedure DGDeleteButtonClick(ACol, ARow, ARecord: Integer);
     procedure DGTableButtonClick(ACol, ARow, ARecord: Integer);
+    procedure DGAddButtonClick(ACol, ARow, ARecord: Integer);
     function CalcChecked: Integer;
     procedure HideEmptyColRow;
+    function OrderBy: string;
   private
     MainFilter: TMainFilter;
     RecordHeight: Integer;
@@ -167,6 +174,7 @@ begin
   if Length(FRecords) > 0 then
   begin
     FTableButton.Print(ACanvas, ARect.Right, ARect.Top);
+    FAddButton.Print(ACanvas, ARect.Right, ARect.Top);
     FExpandButton.Print(ACanvas, ARect.Right, ARect.Bottom);
   end;
 end;
@@ -177,6 +185,7 @@ begin
     FRecords[(AY - ATop) div AHeight].CheckClick(AX, AY);
   FExpandButton.CheckClick(AX, AY);
   FTableButton.CheckClick(AX, AY);
+  FAddButton.CheckClick(AX, AY);
 end;
 
 function TMyCell.GetHint: String;
@@ -198,7 +207,7 @@ begin
 end;
 
 constructor TMyCell.Create(ACol, ARow: Integer; AExpandButtonOnClick,
-  ATableButtonOnClick: TEOnClick);
+  ATableButtonOnClick, AAddButtonOnClick: TEOnClick);
 begin
   FCol := ACol;
   FRow := ARow;
@@ -206,6 +215,8 @@ begin
   FExpandButton.OnClick := AExpandButtonOnClick;
   FTableButton := TTableButton.Create(ACol, ARow, -1);
   FTableButton.OnClick := ATableButtonOnClick;
+  FAddButton := TAddButton.Create(ACol, ARow, -1);
+  FAddButton.OnClick := AAddButtonOnClick;
   SetLength(FRecords, 0);
 end;
 
@@ -219,20 +230,18 @@ begin
     for i := 1 to FieldsCount - 1 do
       if (Fields[i] is TMyJoinedField) then
       begin
-        CBColName.Items.Add((Fields[i] as TMyJoinedField).JoinedFieldCaption);
-        CBRowName.Items.Add((Fields[i] as TMyJoinedField).JoinedFieldCaption);
-        CheckListBox.Items.Add((Fields[i] as TMyJoinedField).JoinedFieldCaption);
-        CheckListBox.Checked[i - 1] := True;
-      end
-      else
-      begin
-        CBColName.Items.Add(Fields[i].Caption);
-        CBRowName.Items.Add(Fields[i].Caption);
-        CheckListBox.Items.Add(Fields[i].Caption);
+        with Fields[i] as TMyJoinedField do
+        begin
+          CBColName.Items.Add(JoinedFieldCaption);
+          CBRowName.Items.Add(JoinedFieldCaption);
+          CBOrderBy.Items.Add(JoinedFieldCaption);
+          CheckListBox.Items.Add(JoinedFieldCaption);
+        end;
         CheckListBox.Checked[i - 1] := True;
       end;
   CBColName.ItemIndex := 0;
   CBRowName.ItemIndex := 0;
+  CBOrderBy.ItemIndex := 0;
   DrawGrid.FocusRectVisible := False;
   MainFilter := TMainFilter.Create;
   MainFilter.AddNewFilters(ScrollBox, CurTable, SpeedButtonOK);
@@ -297,7 +306,7 @@ begin
     begin
       DrawGrid.DefaultRowHeight := (CountChecked + 1) * ATextHeight;
       DrawGrid.RowHeights[0] := ATextHeight;
-      //HideEmptyColRow;
+      HideEmptyColRow;
     end;
     if (aCol = 0) and (aRow <> 0) then
       TextOut(aRect.Left, aRect.Top, RowCaptions[aRow - 1].Name);
@@ -324,8 +333,8 @@ begin
   begin
     Close;
     with (Tables[CurTable].Fields[CBColName.ItemIndex + 1] as TMyJoinedField) do
-      SQL.Text := Format('SELECT %s, %s FROM %s ORDER BY 1', [
-        JoinedFieldName, ReferencedField, ReferencedTable]);
+      SQL.Text := Format('SELECT %s, %s, %s FROM %s ORDER BY 3', [
+        JoinedFieldName, ReferencedField, FieldOrderBy(ReferencedTable), ReferencedTable]);
     Open;
   end;
   SetLength(ColCaptions, 0);
@@ -344,8 +353,8 @@ begin
   begin
     Close;
     with (Tables[CurTable].Fields[CBRowName.ItemIndex + 1] as TMyJoinedField) do
-      SQL.Text := Format('SELECT  %s, %s FROM %s ORDER BY 1', [
-        JoinedFieldName, ReferencedField, ReferencedTable]);
+      SQL.Text := Format('SELECT  %s, %s, %s FROM %s ORDER BY 3', [
+        JoinedFieldName, ReferencedField, FieldOrderBy(ReferencedTable), ReferencedTable]);
     Open;
   end;
   SetLength(RowCaptions, 0);
@@ -365,17 +374,15 @@ begin
 
   for i := 0 to High(Grid) do
     for j := 0 to High(Grid[i]) do
-      Grid[i][j] := TMyCell.Create(i, j, @DGExpandButtonClick, @DGTableButtonClick);
+      Grid[i][j] := TMyCell.Create(i, j, @DGExpandButtonClick, @DGTableButtonClick,
+      @DGAddButtonClick);
 
   /////////////
   with SQLQuery do
   begin
     Close;
     with Tables[CurTable] do
-      SQL.Text := SqlSelect + SqlInnerJoin + MainFilter.CreateSqlFilter +
-        Format(' ORDER BY %s, %s',
-        [(Fields[CBRowName.ItemIndex + 1] as TMyJoinedField).JoinedFieldName,
-        (Fields[CBColName.ItemIndex + 1] as TMyJoinedField).JoinedFieldName]);
+      SQL.Text := SqlSelect + SqlInnerJoin + MainFilter.CreateSqlFilter + OrderBy;
       MainFilter.SetParams(SQLQuery);
     Open;
   end;
@@ -427,7 +434,7 @@ begin
     for i := 0 to High(RowCaptions) do
       ColWidths[0] := Max(ColWidths[0], Canvas.TextWidth(RowCaptions[i].Name) + 2);
   end;
-  HideEmptyColRow;
+  //HideEmptyColRow;
   StringList.Free;
 end;
 
@@ -450,8 +457,6 @@ end;
 procedure TScheduleForm.DGDeleteButtonClick(ACol, ARow, ARecord: Integer);
 begin
   DeleteSql(CurTable, Grid[ACol][ARow].FRecords[ARecord].FID, SQLQuery);
-  FillGrid;
-  DrawGrid.Invalidate;
 end;
 
 procedure TScheduleForm.DGTableButtonClick(ACol, ARow, ARecord: Integer);
@@ -463,6 +468,13 @@ begin
   CreateNewListViewForm(FormName, FormCaption, CurTable, MainFilter.FFilters,
   CBColName.ItemIndex + 1, CBRowName.ItemIndex + 1, ColCaptions[ACol].Name,
   RowCaptions[ARow].Name);
+end;
+
+procedure TScheduleForm.DGAddButtonClick(ACol, ARow, ARecord: Integer);
+begin
+  CreateNewEditForm(CurTable, ftAdd, 0);
+  EditForms[High(EditForms)].SetColRowCB(CBColName.ItemIndex, ColCaptions[ACol].ID,
+  CBRowName.ItemIndex, RowCaptions[ARow].ID);
 end;
 
 function TScheduleForm.CalcChecked: Integer;
@@ -480,31 +492,36 @@ var
   i, j: Integer;
   Empty: Boolean;
 begin
-  for i := 0 to High(Grid) do
+  for i := 0 to High(ColCaptions) do
   begin
     Empty := True;
-    for j := 0 to High(Grid[i]) do
+    for j := 0 to High(RowCaptions)  do
       if Length(Grid[i][j].FRecords) > 0 then
-      begin
         Empty := False;
-        //Break;
-      end;
     if Empty then
       DrawGrid.ColWidths[i + 1] := 0;
   end;
 
-  for j := 0 to High(Grid[0]) do
+  for j := 0 to High(RowCaptions) do
   begin
     Empty := True;
-    for i := 0 to High(Grid) do
+    for i := 0 to High(ColCaptions) do
       if Length(Grid[i][j].FRecords) > 0 then
-      begin
         Empty := False;
-        //Break;
-      end;
     if Empty then
       DrawGrid.RowHeights[j + 1] := 0;
   end;
+end;
+
+function TScheduleForm.OrderBy: string;
+begin
+  with Tables[CurTable] do
+    Result := Format(' ORDER BY %s, %s, %s',
+      [FieldOrderBy((Fields[CBRowName.ItemIndex + 1] as TMyJoinedField).ReferencedTable),
+      FieldOrderBy((Fields[CBColName.ItemIndex + 1] as TMyJoinedField).ReferencedTable),
+      FieldOrderBy((Fields[CBOrderBy.ItemIndex + 1] as TMyJoinedField).ReferencedTable)]);
+  if CBSortType.ItemIndex = 1 then
+    Result += ' DESC';
 end;
 
 end.

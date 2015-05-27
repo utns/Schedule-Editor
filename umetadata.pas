@@ -314,7 +314,7 @@ initialization
     AddNewField('WeekDayID', 'ИД дня', 75, False, 'WeekDays', 'WeekDayID', 'WeekDayName', 'День недели', 90, True);
     AddNewField('PairID', 'ИД пары', 75, False, 'Pairs', 'PairID', 'PairNumber', '№ пары', 55, True);
     AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
-    AddNewField('EducID', 'ИД занятия', 75, False, 'EducActivities', 'EducID', 'EducName', 'Тип занатия', 100, True);
+    AddNewField('EducID', 'ИД занятия', 75, False, 'EducActivities', 'EducID', 'EducName', 'Тип занятия', 100, True);
     AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
     AddNewField('AudienceID', 'ИД аудитории', 75, False, 'Audiences', 'AudienceID', 'AudienceNumber', 'Аудитория', 70, True);
   end;

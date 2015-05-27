@@ -5,7 +5,8 @@ unit UEditors;
 interface
 
 uses
-  Classes, SysUtils, DbCtrls, Controls, UMetadata, sqldb, db, StdCtrls, UDBConnection, Forms, Dialogs, variants;
+  Classes, SysUtils, DbCtrls, Controls, UMetadata, sqldb, db, StdCtrls, UDBConnection,
+  Forms, Dialogs, variants, Graphics;
 
 type
 

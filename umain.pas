@@ -108,7 +108,7 @@ var
 begin
   for i := 0 to High(ListViewForms) do
     ListViewForms[i].OpenSQLQuery;
-  ScheduleForm.FillGrid;
+  ScheduleForm.FillDrawGrid;
   ScheduleForm.Invalidate;
 end;
 

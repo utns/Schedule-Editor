@@ -90,6 +90,7 @@ type
     FCBAndOr: TCBAndOr;
     FEFilterValue: TEFilterValue;
     procedure SetApplyButton(AValue: TSpeedButton);
+    procedure SetEnabled(AValue: Boolean);
     procedure SetTag(AValue: PtrInt);
     procedure SetTop(AValue: Integer);
   public
@@ -105,6 +106,7 @@ type
     property Top: Integer write SetTop;
     property ApplyButton: TSpeedButton write SetApplyButton;
     procedure Assign (Source : TPersistent); override;
+    property Enabled: Boolean write SetEnabled;
   end;
 
   { TMainFilter }
@@ -257,6 +259,7 @@ begin
     FCBColumnName.SetColumn(AColumn);
     FEFilterValue.SetFilterValue(AFilterValue);
     FCBFilterType.SetFilterType('=');
+    Enabled := False;
   end;
 end;
 
@@ -279,6 +282,17 @@ begin
   FCBFilterType.ApplyButton := AValue;
   FCBAndOr.ApplyButton := AValue;
   FEFilterValue.ApplyButton := AValue;
+end;
+
+procedure TPanelFilter.SetEnabled(AValue: Boolean);
+begin
+  FCBColumnName.FComboBoxColumnName.Enabled := AValue;
+  FCBFilterType.FComboBoxFilterType.Enabled := AValue;
+  if FCBAndOr <> nil then
+    FCBAndOr.FComboBoxAndOr.Enabled := AValue;
+  FEFilterValue.FEditFilterValue.Enabled := AValue;
+  if FSBDeleteFilter <> Nil then
+    FSBDeleteFilter.FBitBtnDelete.Visible := False;
 end;
 
 procedure TPanelFilter.SetTop(AValue: Integer);

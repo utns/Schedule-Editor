@@ -1,11 +1,12 @@
 object ScheduleForm: TScheduleForm
-  Left = 1937
+  Left = 1921
   Height = 590
-  Top = 10
+  Top = 9
   Width = 829
   Caption = 'Расписание'
-  ClientHeight = 590
+  ClientHeight = 570
   ClientWidth = 829
+  Menu = MainMenu
   OnCreate = FormCreate
   LCLVersion = '1.2.4.0'
   object Panel: TPanel
@@ -25,17 +26,19 @@ object ScheduleForm: TScheduleForm
       Left = 72
       Height = 23
       Top = 8
-      Width = 100
+      Width = 108
       ItemHeight = 15
+      OnChange = ComboBoxChange
       Style = csDropDownList
       TabOrder = 1
     end
     object CBRowName: TComboBox
       Left = 72
       Height = 23
-      Top = 40
-      Width = 100
+      Top = 41
+      Width = 108
       ItemHeight = 15
+      OnChange = ComboBoxChange
       Style = csDropDownList
       TabOrder = 0
     end
@@ -54,16 +57,6 @@ object ScheduleForm: TScheduleForm
       Width = 43
       Caption = 'Строки:'
       ParentColor = False
-    end
-    object SpeedButtonOK: TSpeedButton
-      Left = 336
-      Height = 22
-      Top = 8
-      Width = 23
-      AllowAllUp = True
-      Caption = 'OK'
-      GroupIndex = 1
-      OnClick = SpeedButtonOKClick
     end
     object ScrollBox: TScrollBox
       AnchorSideTop.Control = Panel
@@ -86,9 +79,62 @@ object ScheduleForm: TScheduleForm
     object SpeedButtonAdd: TSpeedButton
       Left = 336
       Height = 22
-      Top = 56
+      Top = 41
       Width = 23
-      Caption = 'Add'
+      Glyph.Data = {
+        76060000424D7606000000000000360000002800000014000000140000000100
+        200000000000400600006400000064000000000000000000000000000000AAAA
+        AA06A1A1A1139F9F9F20A1A1A126A3A3A332A3A3A335A3A3A3409FA3A343A3A3
+        A3439FA3A343A3A3A343A3A3A33DA5A5A533A3A3A332A1A1A126A3A3A31CAAAA
+        AA0FAAAAAA0300000000CCCCCC05A3A3A34BA3A3A396A4A4A4B5A4A1A2BFA4A3
+        A3D69BA49EE780A58EF868A981FF5FAA7BFF63AA7DFF76A789FD94A49AEEA2A2
+        A3DFA4A1A3D0A4A4A4BFA2A2A2AEA3A3A388A8A8A82CFFFFFF01000000000000
+        0000AAAAAA03BF9FBF0839B06D3147AE728C35B167EA2BB362FE2EB363FE2EB3
+        63FE2EB263FE2CB362FE2FB363F948AF71C140B16E5F5BAD7A19AAAAAA067F7F
+        7F0200000000000000000000000000000000000000002CB869612FB669CB2DB7
+        67FF2FB668FE30B669FF2FB669FF2DB568FF2EB567FD30B669FE30B669FE2EB7
+        68FF2CB767FA2EB8699429BD6A1F000000000000000000000000000000000000
+        00002EBB6E782EB96DED2EB86DFE2EB96DFD2EB86DFE2DB96CFD27B769FD43C1
+        7CFD3CBD77FE29B769FE2EB96DFD2EB96DFD2EB86DFE2DB86DFA2DBB6F9E2CBC
+        6E170000000000000000000000002BC373402BBE70DB2BBD71FF2BBD70FD2BBD
+        71FF2BBD71FE20B969FEC0EAD4FFFEFFFEFFEBF8F1FD5BCB90FE28BC6FFE2BBD
+        71FF2BBD70FD2BBD71FF2BBD71FF2CBF73613FBF7F04000000002AD47F062AC2
+        768A2BBF74FF2BBE74FF2BBF74FD2BBE74FF2BBE74FE1EBB6CFED3F0E2FFFEFE
+        FEFFF0FAF5FD68D09BFE27BD71FE2BBE74FF2BBF74FD2BBE74FF2BBE74FF29C0
+        75D52BCA7B1D000000002BCA7B1D29C47AD328C177FE28C177FE27C177FE26C1
+        76FE26C176FE1ABD6EFECFEFE0FEFDFDFDFEEFF9F4FE64D19CFE22C074FE26C1
+        76FE26C176FE28C177FE28C177FE28C278FF2AC87C5400FF7F0228C37D3326C6
+        7AFB26C57BFF26C57BFF23C378FD41CC8BFF40CB89FE35C883FED5F3E5FFFEFF
+        FFFFF1FBF6FD76D9ABFE3DCA88FE40CC8AFF3CCA89FD21C478FF26C47BFE26C5
+        7BFE27CB7EAE33CC990525C87E5925C77EFE25C87EFE1AC678FFA7E8CAFDE4F8
+        EFFFE3F7EEFEE2F7EDFEF9FDFBFFFFFFFFFFFBFCFCFDEBF9F2FEE3F7EEFEE4F8
+        EFFFE2F7EDFD5DD79FFF21C67BFE25C87EFE25CD81E61FBF7F0824CC816A24CB
+        80FF22CA80FD14C677FDCFF2E3FEFEFDFEFDFDFDFDFDFDFDFDFDFCFCFCFDFCFC
+        FCFDFDFDFDFEFDFDFDFDFDFDFDFDFCFCFCFDFEFEFEFE78DDB1FD1DC97CFD22C9
+        7FFE25D084F71FDF7F0825CE845E27CE86FE21CC84FE17CB7EFF98E7C5FDE3F9
+        F0FFE2F8EFFEE1F8EEFEF9FDFBFFFFFFFFFFFBFDFCFDEAFAF3FEE2F8EFFEE3F8
+        F0FFE1F8EEFD4FD69DFF1ECB81FE20CC83FE2DD58CEC1FDF7F082DD18E3D2BD2
+        8BFE20CE85FE20CE85FE17CC81FE29CF8AFE28CF8AFE1CCC84FECEF2E4FEFDFD
+        FDFEEFFAF5FE65DCAAFE25CE88FE29CF8AFE23CF87FE1BCC82FE20CE85FE23CF
+        87FF33DA92C12AD4AA063CE1962230D892E421D289FF1FD189FF1FD089FD1ED1
+        88FF1ED088FE11CD80FECEF5E4FFFEFFFFFFEFFBF6FD5DDDA9FE1ACF86FE1ED1
+        88FF1ED088FD1FD189FF1ED087FE32D692FE2EDD937200FFAA0333E5990A44DF
+        9F9827D48FFE1DD38BFD1ED28BFE1ED38CFD1ED28BFE11D085FDD1F5E6FDFEFD
+        FEFDEFFBF6FE5FDEABFE1AD28AFD1ED38CFD1ED28BFE1ED38CFD20D28CFE3ADB
+        98E63FE29B24000000000000000035E09A4C43DF9FE31ED58DFF1DD48CFD1DD4
+        8CFF1DD48CFE13D287FE9CECCDFFF5FDFAFFDEF8EEFD40DA9EFE1AD38BFE1DD4
+        8CFF1DD48CFD1BD48CFF38DB9AFD4CE3A46E24DA910700000000000000000000
+        00004DE1A59140DD9DF71DD590FD1AD78EFF1CD58EFE1BD68FFE11D589FF0FD3
+        88FF10D389FD18D48CFE1CD68FFE1BD78FFF19D48EFD28D994FD51E3A6B92BE1
+        98230000000000000000000000000000000017E7A20B51E2A6994AE2A3EE2CDA
+        97FE1BD78FFE18D68EFE19D68FFE18D68EFE19D68EFE18D68FFE18D68EFE26D8
+        94FE30DB97FE60E7AFC632DD9A3D000000000000000000000000000000000000
+        00000000000033CC99053EE1A05E57E8ADB544E2A2F843E1A2FF37DF9DFF2EDC
+        99FF31DC9AFE3FE0A0FF44E1A2FF47E3A4DE64E8B18B25E3972F000000000000
+        00000000000000000000000000000000000000000000000000000000000033E5
+        99144DE5A83B39E09E7C3AE09FAD44E2A5BF40E2A2B938E09F904FE3A54A43E1
+        A5222AFFAA060000000000000000000000000000000000000000
+      }
       OnClick = SpeedButtonAddClick
     end
     object CheckListBox: TCheckListBox
@@ -107,6 +153,50 @@ object ScheduleForm: TScheduleForm
       OnItemClick = CheckListBoxItemClick
       TabOrder = 3
     end
+    object CBOrderBy: TComboBox
+      Left = 72
+      Height = 23
+      Top = 104
+      Width = 108
+      ItemHeight = 15
+      OnChange = ComboBoxChange
+      Style = csDropDownList
+      TabOrder = 4
+    end
+    object LabelOrderBy: TLabel
+      Left = 8
+      Height = 15
+      Top = 80
+      Width = 51
+      Caption = 'Порядок:'
+      ParentColor = False
+    end
+    object CBSortType: TComboBox
+      Left = 72
+      Height = 23
+      Top = 72
+      Width = 108
+      ItemHeight = 15
+      ItemIndex = 0
+      Items.Strings = (
+        'Возрастание'
+        'Убывание'
+      )
+      OnChange = ComboBoxChange
+      Style = csDropDownList
+      TabOrder = 5
+      Text = 'Возрастание'
+    end
+    object SpeedButtonOK: TSpeedButton
+      Left = 336
+      Height = 22
+      Top = 9
+      Width = 23
+      AllowAllUp = True
+      Caption = 'OK'
+      GroupIndex = 1
+      OnClick = SpeedButtonOKClick
+    end
   end
   object DrawGrid: TDrawGrid
     AnchorSideLeft.Control = Owner
@@ -117,7 +207,7 @@ object ScheduleForm: TScheduleForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 454
+    Height = 434
     Top = 136
     Width = 829
     Anchors = [akTop, akLeft, akRight, akBottom]
@@ -127,9 +217,12 @@ object ScheduleForm: TScheduleForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
+    OnDragDrop = DrawGridDragDrop
+    OnDragOver = DrawGridDragOver
     OnDrawCell = StringGridDrawCell
     OnMouseDown = DrawGridMouseDown
     OnMouseMove = DrawGridMouseMove
+    OnMouseUp = DrawGridMouseUp
     OnSelectCell = StringGridSelectCell
   end
   object SQLQuery: TSQLQuery
@@ -139,5 +232,30 @@ object ScheduleForm: TScheduleForm
     Params = <>
     left = 331
     top = 252
+  end
+  object MainMenu: TMainMenu
+    left = 161
+    top = 324
+    object MISettings: TMenuItem
+      Caption = 'Настройки'
+      object MIFieldName: TMenuItem
+        AutoCheck = True
+        Caption = 'Название полей'
+        Checked = True
+        OnClick = MIFieldNameClick
+      end
+      object MIHideEmptyRow: TMenuItem
+        AutoCheck = True
+        Caption = 'Скрывать пустые строки'
+        Checked = True
+        OnClick = MenuItemHideEmptyClick
+      end
+      object MIHideEmptyCol: TMenuItem
+        AutoCheck = True
+        Caption = 'Скрывать пустые столбцы'
+        Checked = True
+        OnClick = MenuItemHideEmptyClick
+      end
+    end
   end
 end

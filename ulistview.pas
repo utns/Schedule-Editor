@@ -84,7 +84,7 @@ begin
   SQLQuery.Open;
   SetTableColumns;
   MainFilter := TMainFilter.Create;
-  MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
+  //MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
   Show;
   CurSortType := 0;
   CurSortColumn := -1;
@@ -279,6 +279,8 @@ begin
   begin
     SetLength(ListViewForms, Length(ListViewForms) + 1);
     ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag);
+    with ListViewForms[High(ListViewForms)] do
+      MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
   end;
 end;
 
@@ -289,8 +291,14 @@ begin
   if not(IsFormOpen(AName)) then
   begin
     SetLength(ListViewForms, Length(ListViewForms) + 1);
-    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag,
-    AFilters, AColumn1, AColumn2, AFilterValue1, AFilterValue2);
+    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag);
+    with ListViewForms[High(ListViewForms)] do
+    begin
+      MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn1, AFilterValue1);
+      MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn2, AFilterValue2);
+      MainFilter.CopyFilters(ScrollBox, Tag, SpeedButtonOK, AFilters);
+      SpeedButtonOKClick(Nil);
+    end;
   end;
 end;
 

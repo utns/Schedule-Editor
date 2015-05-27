@@ -21,6 +21,7 @@ type
     OnClick: TEOnClick;
     constructor Create(ACol, ARow, ARecord: Integer);
     procedure CheckClick(AX, AY: Integer);
+    destructor Destroy; override;
   end;
 
   { TAddButton }
@@ -155,6 +156,12 @@ begin
   if (AX >= FX) and (AX <= FX + FImage.Width)
   and (AY >= FY) and (AY <= FY + FImage.Height) then
     OnClick(FCol, FRow, FRecord);
+end;
+
+destructor TMainButton.Destroy;
+begin
+  FImage.Free;
+  inherited Destroy;
 end;
 
 end.

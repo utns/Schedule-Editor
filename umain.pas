@@ -23,7 +23,6 @@ type
     procedure MenuItemAboutClick(Sender: TObject);
     procedure MenuItemClick(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
-    //function IsFormOpen(AName: String): Boolean;
     procedure MenuItemScheduleClick(Sender: TObject);
   private
     { private declarations }
@@ -68,13 +67,7 @@ end;
 procedure TMainForm.MenuItemClick(Sender: TObject);
 begin
   with (Sender as TMenuItem) do
-    CreateNewListViewForm(Name, Caption, Tag);
-  {if not(IsFormOpen((Sender as TMenuItem).Name)) then
-  begin
-    SetLength(ListViewForms, Length(ListViewForms) + 1);
-    with (Sender as TMenuItem) do
-      ListViewForms[High(ListViewForms)] := TFormListView.Create(Name, Caption, Tag);
-  end;}
+    CreateNewListViewForm(Name, Caption, Tag, ftListView);
 end;
 
 procedure TMainForm.MenuItemExitClick(Sender: TObject);
@@ -82,20 +75,6 @@ begin
   if MessageDlg('Выйти из программы?', mtConfirmation, mbYesNo, 0) = mrYes then
     MainForm.Close;
 end;
-
-{function TMainForm.IsFormOpen(AName: String): Boolean;
-var
-  i: Integer;
-begin
-  Result := False;
-  for i := 0 To High(ListViewForms) do
-    if (ListViewForms[i].Name = AName) then
-    begin
-      Result := True;
-      ListViewForms[i].ShowOnTop;
-      Break;
-    end;
-end;}
 
 procedure TMainForm.MenuItemScheduleClick(Sender: TObject);
 begin
@@ -109,7 +88,8 @@ begin
   for i := 0 to High(ListViewForms) do
     ListViewForms[i].OpenSQLQuery;
   ScheduleForm.FillDrawGrid;
-  ScheduleForm.Invalidate;
+  ScheduleForm.HideEmptyColRow;
+  ScheduleForm.Invalidate;  ///
 end;
 
 initialization

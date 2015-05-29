@@ -28,9 +28,7 @@ type
     SpeedButtonOK: TSpeedButton;
     SQLQuery: TSQLQuery;
     procedure ButtonAddFilterClick(Sender: TObject);
-    constructor Create(AName, ACaption: String; ATag: Integer);
-    constructor Create(AName, ACaption: String; ATag: Integer; AFilters: array of TPanelFilter;
-      AColumn1, AColumn2: Integer; AFilterValue1, AFilterValue2: String);
+    constructor Create(AName, ACaption: String; ATag: Integer; AFormType: TFormType);
     procedure DBGridCellClick(Column: TColumn);
     procedure DBGridDblClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
@@ -41,24 +39,23 @@ type
     procedure SpeedButtonDeleteClick(Sender: TObject);
     procedure SpeedButtonEditClick(Sender: TObject);
     procedure SpeedButtonOKClick(Sender: TObject);
-    //procedure DeleteSQL;
     procedure OpenSQLQuery;
-    //procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
     procedure SQLQueryBeforeClose(DataSet: TDataSet);
   private
     MainFilter: TMainFilter;
-    CurSortColumn: Integer;
+    CurSortColumnTag, CurSortColumnIndex: Integer;
     CurSortType: Integer;
     CellDblClick: Boolean;
     SelectedID: Integer;
+    FormType: TFormType;
   public
-
+    FilterValueIDCol, FilterValueIDRow: Integer;
   end;
 
-  procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer);
-  procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer;
-    AFilters: array of TPanelFilter; AColumn1, AColumn2: Integer;
-    AFilterValue1, AFilterValue2: String);
+  procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer; AFormType: TFormType);
+  procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer; AFormType: TFormType;
+    AFilters: array of TPanelFilter; ACol, ARow: Integer; AFilterValueCol,
+    AFilterValueRow: String; AFilterValueIDCol, AFilterValueIDRow: Integer);
 
 var
   FormListView: TFormListView;
@@ -66,52 +63,27 @@ var
 
 implementation
 
-
-
 {$R *.lfm}
 
 { TFormListView }
 
-constructor TFormListView.Create(AName, ACaption: String; ATag: Integer);
+constructor TFormListView.Create(AName, ACaption: String; ATag: Integer;
+  AFormType: TFormType);
 begin
   Inherited Create(Application);
   Caption := ACaption;
   Name := AName;
   Tag := ATag;
+  FormType := AFormType;
   SQLQuery.Close;
   SQLQuery.SQL.Clear;
   SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery(-1, -1, ''));
   SQLQuery.Open;
   SetTableColumns;
   MainFilter := TMainFilter.Create;
-  //MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
   Show;
   CurSortType := 0;
-  CurSortColumn := -1;
-end;
-
-constructor TFormListView.Create(AName, ACaption: String; ATag: Integer;
-  AFilters: array of TPanelFilter; AColumn1, AColumn2: Integer; AFilterValue1,
-  AFilterValue2: String);
-begin
-  Inherited Create(Application);
-  Caption := ACaption;
-  Name := AName;
-  Tag := ATag;
-  SQLQuery.Close;
-  SQLQuery.SQL.Clear;
-  MainFilter := TMainFilter.Create;
-  MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn1, AFilterValue1);
-  MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn2, AFilterValue2);
-  MainFilter.CopyFilters(ScrollBox, Tag, SpeedButtonOK, AFilters);
-  SQLQuery.SQL.AddStrings(Tables[ATag].CreateSQlQuery(-1, -1, ''));//MainFilter.CreateSqlFilter));
-  SQLQuery.Open;
-  SetTableColumns;
-  //MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
-  SpeedButtonOKClick(Self);
-  Show;
-  CurSortType := 0;
-  CurSortColumn := -1;
+  CurSortColumnTag := -1;
 end;
 
 procedure TFormListView.DBGridCellClick(Column: TColumn);
@@ -122,34 +94,40 @@ end;
 procedure TFormListView.DBGridDblClick(Sender: TObject);
 begin
   if CellDblClick then
-    CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
+    if FormType = ftScheduleListView then
+      CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value,
+        MainFilter.FFilters[0].GetColumn - 1, MainFilter.FFilters[1].GetColumn - 1)
+    else
+      CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.DBGridTitleClick(Column: TColumn);
 begin
   CellDblClick := False;
   Mouse.CursorPos := Point(Mouse.CursorPos.x + 1, Mouse.CursorPos.y);
-  if (CurSortColumn <> Column.Tag) and (CurSortColumn <> -1) then
+  if (CurSortColumnTag <> Column.Tag) and (CurSortColumnTag <> -1) then
   begin
-    CurSortColumn := Column.Tag;
+    CurSortColumnTag := Column.Tag;
+    CurSortColumnIndex := Column.Index;
     CurSortType := 0;
   end;
-  if (CurSortColumn = Column.Tag) or (CurSortColumn = -1) then
+  if (CurSortColumnTag = Column.Tag) or (CurSortColumnTag = -1) then
   begin
-    CurSortColumn := Column.Tag;
+    CurSortColumnTag := Column.Tag;
+    CurSortColumnIndex := Column.Index;
     CurSortType := (CurSortType + 1) mod 3;
     SQLQuery.Close;
     SQLQuery.SQL.Clear;
-    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CurSortColumn, CurSortType, MainFilter.CreateSqlFilter));
+    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(CurSortColumnTag, CurSortType, MainFilter.CreateSqlFilter));
     MainFilter.SetParams(SQLQuery);
     SQLQuery.Open;
     SetTableColumns;
-    DBGrid.Columns[CurSortColumn].Width := DBGrid.Columns[CurSortColumn].Width + 16;
-    DBGrid.Columns[CurSortColumn].Title.ImageIndex := CurSortType - 1;
+    DBGrid.Columns[CurSortColumnIndex].Width := DBGrid.Columns[CurSortColumnIndex].Width + 16;
+    DBGrid.Columns[CurSortColumnIndex].Title.ImageIndex := CurSortType - 1;
     if CurSortType = 0 then
     begin
-      DBGrid.Columns[CurSortColumn].Width := DBGrid.Columns[CurSortColumn].Width - 16;
-      CurSortColumn := -1;
+      DBGrid.Columns[CurSortColumnIndex].Width := DBGrid.Columns[CurSortColumnIndex].Width - 16;
+      CurSortColumnTag := -1;
     end;
   end;
 end;
@@ -207,7 +185,15 @@ end;
 
 procedure TFormListView.SpeedButtonAddClick(Sender: TObject);
 begin
-  CreateNewEditForm(Self.Tag, ftAdd, 0);
+  if FormType = ftScheduleListView then
+  begin
+    CreateNewEditForm(Self.Tag, ftAdd, 0, MainFilter.FFilters[0].GetColumn - 1,
+      MainFilter.FFilters[1].GetColumn - 1);
+    EditForms[High(EditForms)].SetColRowCB(MainFilter.FFilters[0].GetColumn - 1, FilterValueIDCol,
+      MainFilter.FFilters[1].GetColumn - 1, FilterValueIDRow);
+  end
+  else
+    CreateNewEditForm(Self.Tag, ftAdd, 0);
 end;
 
 procedure TFormListView.SpeedButtonAddFilterClick(Sender: TObject);
@@ -216,47 +202,29 @@ begin
 end;
 
 procedure TFormListView.SpeedButtonDeleteClick(Sender: TObject);
-var
-  ButtonSelected, i: Integer;
 begin
   DeleteSql(Self.Tag, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value, SQLQuery);
   OpenSQLQuery;
-  {ButtonSelected := MessageDlg('Удалить выбранную запись?', mtConfirmation, mbYesNo, 0);
-  if ButtonSelected = mrYes then
-  begin
-    for i := 0 to High(EditForms) do
-      if SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value = EditForms[i].Tag then
-      begin
-        MessageDlg('Выбранная запись редактируется.', mtError, [mbOK], 0);
-        EditForms[i].ShowOnTop;
-        Exit;
-      end;
-    DeleteSQL;
-  end;}
 end;
 
 procedure TFormListView.SpeedButtonEditClick(Sender: TObject);
 begin
-  CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
+  if FormType = ftScheduleListView then
+    CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value,
+      MainFilter.FFilters[0].GetColumn - 1, MainFilter.FFilters[1].GetColumn - 1)
+  else
+    CreateNewEditForm(Self.Tag, ftEdit, SQLQuery.Fields.FieldByName(Tables[Self.Tag].Fields[0].Name).Value);
 end;
 
 procedure TFormListView.SpeedButtonOKClick(Sender: TObject);
 begin
-  if (Length(MainFilter.FFilters) > 1) and (MainFilter.FFilters[0].GetFilterValue = '') then
-  begin
-      ShowMessage('Установите значение первого фильтра.');
-      SpeedButtonOK.Down := False;
-  end
-  else
-  begin
-    SpeedButtonOK.Down := True;
-    SQLQuery.Close;
-    SQLQuery.SQL.Clear;
-    SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(-1, -1, MainFilter.CreateSqlFilter));
-    MainFilter.SetParams(SQLQuery);
-    SQLQuery.Open;
-    SetTableColumns;
-  end;
+  SpeedButtonOK.Down := True;
+  SQLQuery.Close;
+  SQLQuery.SQL.Clear;
+  SQLQuery.SQL.AddStrings(Tables[Tag].CreateSQlQuery(-1, -1, MainFilter.CreateSqlFilter));
+  MainFilter.SetParams(SQLQuery);
+  SQLQuery.Open;
+  SetTableColumns;
 end;
 
 function IsFormOpen(AName: String): Boolean;
@@ -273,63 +241,37 @@ begin
     end;
 end;
 
-procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer);
+procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer; AFormType: TFormType);
 begin
   if not(IsFormOpen(AName)) then
   begin
     SetLength(ListViewForms, Length(ListViewForms) + 1);
-    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag);
+    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag, AFormType);
     with ListViewForms[High(ListViewForms)] do
       MainFilter.AddNewFilters(ScrollBox, Tag, SpeedButtonOK);
   end;
 end;
 
 procedure CreateNewListViewForm(AName, ACaption: String; ATag: Integer;
-  AFilters: array of TPanelFilter; AColumn1, AColumn2: Integer; AFilterValue1,
-  AFilterValue2: String);
+  AFormType: TFormType; AFilters: array of TPanelFilter; ACol,
+  ARow: Integer; AFilterValueCol, AFilterValueRow: String; AFilterValueIDCol,
+  AFilterValueIDRow: Integer);
 begin
   if not(IsFormOpen(AName)) then
   begin
     SetLength(ListViewForms, Length(ListViewForms) + 1);
-    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag);
+    ListViewForms[High(ListViewForms)] := TFormListView.Create(AName, ACaption, ATag, AFormType);
     with ListViewForms[High(ListViewForms)] do
     begin
-      MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn1, AFilterValue1);
-      MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, AColumn2, AFilterValue2);
+      FilterValueIDCol := AFilterValueIDCol;
+      FilterValueIDRow := AFilterValueIDRow;
+      MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, ACol, AFilterValueCol);
+      MainFilter.AddFilter(ScrollBox, Tag, SpeedButtonOK, ARow, AFilterValueRow);
       MainFilter.CopyFilters(ScrollBox, Tag, SpeedButtonOK, AFilters);
       SpeedButtonOKClick(Nil);
     end;
   end;
 end;
-
-{procedure TFormListView.DeleteSQL;
-var
-  s, id: String;
-begin
-  try
-    id := IntToStr(SQLQuery.Fields.FieldByName(Tables[Tag].Fields[0].Name).Value);
-    with SQLQuery do
-    begin
-      s := SQL.Text;
-      Close;
-      with Tables[Self.Tag] do
-        SQL.Text := Format('DELETE FROM %s WHERE %s = %s;', [Name, Fields[0].Name, id]);
-      ExecSQL;
-      DataModuleMain.SQLTransaction.Commit;
-      SQL.Clear;
-      SQL.AddStrings(s);
-      EActivateSQL;
-    end;
-  except
-    on E: EDatabaseError do
-    begin
-      MessageDlg('Нельзя удалить внешний ключ.', mtError, [mbOK], 0);
-      SQLQuery.SQL.Text := s;
-      OpenSQLQuery;
-    end;
-  end;
-  RefreshEditForms;
-end;}
 
 procedure TFormListView.OpenSQLQuery;
 begin

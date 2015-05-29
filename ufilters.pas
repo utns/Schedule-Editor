@@ -89,7 +89,6 @@ type
     FCBFilterType: TCBFilterType;
     FCBAndOr: TCBAndOr;
     FEFilterValue: TEFilterValue;
-    procedure SetApplyButton(AValue: TSpeedButton);
     procedure SetEnabled(AValue: Boolean);
     procedure SetTag(AValue: PtrInt);
     procedure SetTop(AValue: Integer);
@@ -104,8 +103,6 @@ type
     function GetFilterAndOr: String;
     property Tag: PtrInt write SetTag;
     property Top: Integer write SetTop;
-    property ApplyButton: TSpeedButton write SetApplyButton;
-    procedure Assign (Source : TPersistent); override;
     property Enabled: Boolean write SetEnabled;
   end;
 
@@ -127,6 +124,7 @@ type
       ASpeedButton: TSpeedButton; AFilters: Array of TPanelFilter);
     procedure AddFilter(AWinControl: TWinControl; ACurTable: Integer;
       ASpeedButton: TSpeedButton; AColumn: Integer; AFilterValue: String);
+    function IsFirstValue: Boolean;
     constructor Create;
   end;
 
@@ -186,49 +184,60 @@ function TMainFilter.CreateSqlFilter: String;
 var
   i: Integer;
   s, FilterType: String;
+  IsFilterEmpty: Boolean;
 begin
-  Result := '';
+  IsFilterEmpty := True;
   with Tables[FCurTable] do
   begin
-    with FFilters[0] do
+    for i := 0 to High(FFilters) do
     begin
-      s := ' WHERE %s.%s %s :p%d ';
-      case GetFilterType of
-       'Substring', 'Begin': FilterType := 'LIKE';
-       else FilterType := GetFilterType;
-      end;
-
-      if GetFilterValue <> '' then
-        if Fields[GetColumn] is TMyJoinedField then
-          Result += Format(s, [(Fields[GetColumn] as TMyJoinedField).ReferencedTable,
-            (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
-            FilterType, 0])
-        else
-          Result += Format(s, [Name, Fields[GetColumn].Name, FilterType, 0]);
-    end;
-
-    for i := 1 to High(FFilters) do
-    begin
-      with FFilters[i] do
+      if IsFilterEmpty then
       begin
-        s := ' %s %s.%s %s :p%d';
-        case GetFilterType of
-          'Substring', 'Begin': FilterType := 'LIKE';
-          else FilterType := GetFilterType;
-        end;
+        with FFilters[i] do
+        begin
+          s := ' WHERE %s.%s %s :p%d ';
+          case GetFilterType of
+           'Substring', 'Begin': FilterType := 'LIKE';
+           else FilterType := GetFilterType;
+          end;
 
-        if GetFilterValue <> '' then
-          if Fields[GetColumn] is TMyJoinedField then
-            Result += Format(s, [GetFilterAndOr,
-              (Fields[GetColumn] as TMyJoinedField).ReferencedTable,
-              (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
-              FilterType, i])
-          else
-            Result += Format(s, [GetFilterAndOr, Name, Fields[GetColumn].Name,
-              FilterType, i]);
+          if GetFilterValue <> '' then
+          begin
+            IsFilterEmpty := False;
+            if Fields[GetColumn] is TMyJoinedField then
+              Result += Format(s, [(Fields[GetColumn] as TMyJoinedField).ReferencedTable,
+                (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
+                FilterType, i])
+              else
+                Result += Format(s, [Name, Fields[GetColumn].Name, FilterType, i]);
+          end;
+        end;
+      end
+      else
+      begin
+        with FFilters[i] do
+        begin
+          s := ' %s %s.%s %s :p%d ';
+          case GetFilterType of
+            'Substring', 'Begin': FilterType := 'LIKE';
+            else FilterType := GetFilterType;
+          end;
+
+          if GetFilterValue <> '' then
+            if Fields[GetColumn] is TMyJoinedField then
+              Result += Format(s, [GetFilterAndOr,
+                (Fields[GetColumn] as TMyJoinedField).ReferencedTable,
+                (Fields[GetColumn] as TMyJoinedField).JoinedFieldName,
+                FilterType, i])
+            else
+              Result += Format(s, [GetFilterAndOr, Name, Fields[GetColumn].Name,
+                FilterType, i]);
+        end;
       end;
     end;
   end;
+  if IsFilterEmpty then
+    Result := '';
 end;
 
 procedure TMainFilter.CopyFilters(AWinControl: TWinControl; ACurTable: Integer;
@@ -263,6 +272,16 @@ begin
   end;
 end;
 
+function TMainFilter.IsFirstValue: Boolean;
+begin
+  Result := True;
+  if (Length(FFilters) > 1) and (FFilters[0].GetFilterValue = '') then
+  begin
+      ShowMessage('Установите значение первого фильтра.');
+      Result := False;
+  end
+end;
+
 constructor TMainFilter.Create;
 begin
   inherited;
@@ -274,14 +293,6 @@ end;
 procedure TPanelFilter.SetTag(AValue: PtrInt);
 begin
   FPanel.Tag := AValue;
-end;
-
-procedure TPanelFilter.SetApplyButton(AValue: TSpeedButton);
-begin
-  FCBColumnName.ApplyButton := AValue;
-  FCBFilterType.ApplyButton := AValue;
-  FCBAndOr.ApplyButton := AValue;
-  FEFilterValue.ApplyButton := AValue;
 end;
 
 procedure TPanelFilter.SetEnabled(AValue: Boolean);
@@ -351,24 +362,6 @@ end;
 function TPanelFilter.GetFilterAndOr: String;
 begin
   Result := FCBAndOr.GetFilterAndOr;
-end;
-
-procedure TPanelFilter.Assign(Source: TPersistent);
-begin
-    if Source is TPanelFilter then
-    begin
-          {FPanel: TPanel;
-    FCBColumnName: TCBColumnName;
-    FCBFilterType: TCBFilterType;
-    FCBAndOr: TCBAndOr;
-    FEFilterValue: TEFilterValue;}
-        FPanel.Assign(TPanelFilter(Source).FPanel);
-        FCBColumnName.Assign(TPanelFilter(Source).FCBColumnName);
-        FCBFilterType.Assign(TPanelFilter(Source).FCBFilterType);
-        FCBAndOr.Assign(TPanelFilter(Source).FCBAndOr);
-        FEFilterValue.Assign(TPanelFilter(Source).FEFilterValue);
-    end
-    else inherited;
 end;
 
 { TBBDeleteFilter }

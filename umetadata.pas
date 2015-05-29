@@ -9,7 +9,7 @@ uses
 
 type
 
-  TFormType = (ftEdit, ftAdd);
+  TFormType = (ftEdit, ftAdd, ftScheduleListView, ftListView);
 
   { TMyField }
 
@@ -223,7 +223,7 @@ begin
   if (ASortColumn >= 0) and (ATypeSort > 0) then
   begin
     if (Fields[ASortColumn] is TMyJoinedField) then
-      Result := ' ORDER BY ' + FieldOrderBy((Fields[ASortColumn] as TMyJoinedField).ReferencedTable)//(Fields[ASortColumn] as TMyJoinedField).JoinedFieldName
+      Result := ' ORDER BY ' + FieldOrderBy((Fields[ASortColumn] as TMyJoinedField).ReferencedTable)
     else
       Result := ' ORDER BY ' + Fields[ASortColumn].Name;
     if ATypeSort = 2 then
@@ -313,7 +313,7 @@ initialization
     AddNewField('GroupID', 'ИД группы', 75, False, 'Groups', 'GroupID', 'GroupNumber', 'Группа', 55, True);
     AddNewField('WeekDayID', 'ИД дня', 75, False, 'WeekDays', 'WeekDayID', 'WeekDayName', 'День недели', 90, True);
     AddNewField('PairID', 'ИД пары', 75, False, 'Pairs', 'PairID', 'PairNumber', '№ пары', 55, True);
-    AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 190, True);
+    AddNewField('SubjectID', 'ИД предмета', 75, False, 'Subjects', 'SubjectID', 'SubjectName', 'Предмет', 200, True);
     AddNewField('EducID', 'ИД занятия', 75, False, 'EducActivities', 'EducID', 'EducName', 'Тип занятия', 100, True);
     AddNewField('TeacherID', 'ИД преподавателя', 75, False, 'Teachers', 'TeacherID', 'TeacherInitials', 'Преподаватель', 250, True);
     AddNewField('AudienceID', 'ИД аудитории', 75, False, 'Audiences', 'AudienceID', 'AudienceNumber', 'Аудитория', 70, True);

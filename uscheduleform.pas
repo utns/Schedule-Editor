@@ -18,10 +18,9 @@ type
     ID: Integer;
   end;
 
-  //TDragType = (dtOne, dtAll);
   TDragDrop = record
     DType: (dtOne, dtAll);
-    StartCol, StartRow, RecordNum: Integer;
+    RecordNum: Integer;
   end;
 
   TCaptionsArray = array of TMyCaption;
@@ -48,6 +47,7 @@ type
     SQLQuery: TSQLQuery;
     procedure ComboBoxChange(Sender: TObject);
     procedure CheckListBoxItemClick(Sender: TObject; Index: integer);
+    procedure DrawGridDblClick(Sender: TObject);
     procedure DrawGridDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure DrawGridDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
@@ -59,29 +59,28 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
     procedure MenuItemHideEmptyClick(Sender: TObject);
-    procedure MIFieldNameClick(Sender: TObject);
+    procedure MenuItemFieldNameClick(Sender: TObject);
     procedure SpeedButtonAddClick(Sender: TObject);
     procedure SpeedButtonOKClick(Sender: TObject);
     procedure StringGridDrawCell(Sender: TObject; aCol, aRow: Integer;
       aRect: TRect; aState: TGridDrawState);
-    procedure StringGridSelectCell(Sender: TObject; aCol, aRow: Integer;
-      var CanSelect: Boolean);
     procedure FillDrawGrid;
     procedure DGEditButtonClick(ACol, ARow, ARecord: Integer);
     procedure DGExpandButtonClick(ACol, ARow, ARecord: Integer);
     procedure DGDeleteButtonClick(ACol, ARow, ARecord: Integer);
     procedure DGTableButtonClick(ACol, ARow, ARecord: Integer);
     procedure DGAddButtonClick(ACol, ARow, ARecord: Integer);
-    function CalcChecked: Integer;
     procedure HideEmptyColRow;
     function OrderBy: string;
     procedure SetColWidth;
-    procedure SetCaptions(AComboBox: TComboBox; var ACaptions: TCaptionsArray);
+    procedure SetRowHeight;
+    procedure SetCaptions(AIndex: Integer; var ACaptions: TCaptionsArray);
     procedure FillGrid;
     procedure SQLUpdate(ACol, ARow: Integer);
   private
     MainFilter: TMainFilter;
-    RecordHeight: Integer;
+    RecordHeight, MouseClickCol, MouseClickRow, CurColIndex, CurRowIndex,
+      CurOrderByIndex: Integer;
     ColCaptions, RowCaptions: array of TMyCaption;
     Grid: array of array of TMyCell;
     IsMouseMove: Boolean;
@@ -127,20 +126,20 @@ begin
   DrawGrid.FocusRectVisible := False;
   MainFilter := TMainFilter.Create;
   MainFilter.AddNewFilters(ScrollBox, CurTable, SpeedButtonOK);
-  FillDrawGrid;
-  DrawGrid.Invalidate;
+  SpeedButtonOKClick(Self);
 end;
 
 procedure TScheduleForm.MenuItemHideEmptyClick(Sender: TObject);
 begin
-  //SetColWidth;
-  FillDrawGrid;
+  HideEmptyColRow;
   DrawGrid.Invalidate;
 end;
 
-procedure TScheduleForm.MIFieldNameClick(Sender: TObject);
+procedure TScheduleForm.MenuItemFieldNameClick(Sender: TObject);
 begin
   FillDrawGrid;
+  SetColWidth;
+  HideEmptyColRow;
   DrawGrid.Invalidate;
 end;
 
@@ -180,28 +179,50 @@ var
 begin
   IsMouseMove := False;
   DrawGrid.MouseToCell(X, Y, ACol, ARow);
+  MouseClickCol := ACol - 1;
+  MouseClickRow := ARow - 1;
   if ssRight in Shift then
-  begin
     with DragAndDrop do
     begin
       if ssCtrl in Shift then
         DType := dtAll
       else
         DType := dtOne;
-       RecordNum :=(Y - DrawGrid.CellRect(ACol, ARow).Top) div RecordHeight;
-       StartCol := ACol - 1;
-       StartRow := ARow - 1;
+      RecordNum :=(Y - DrawGrid.CellRect(ACol, ARow).Top) div RecordHeight;
+      if Grid[MouseClickCol][MouseClickRow].RecordsCount > RecordNum then
+        BeginDrag(True);
     end;
-    BeginDrag(True);
-  end;
 end;
 
 procedure TScheduleForm.CheckListBoxItemClick(Sender: TObject; Index: integer);
 begin
-  if CalcChecked = 0 then
+  if CheckedCount(CheckListBox) = 0 then
     CheckListBox.Checked[Index] := True;
-  FillDrawGrid;
+  SetColWidth;
+  SetRowHeight;
+  HideEmptyColRow;
   DrawGrid.Invalidate;
+end;
+
+procedure TScheduleForm.DrawGridDblClick(Sender: TObject);
+var
+  j: Integer;
+begin
+  if (MouseClickRow = -1) and (MouseClickCol <> -1) then
+    with DrawGrid do
+    begin
+      ColWidths[MouseClickCol + 1] := Canvas.TextWidth(ColCaptions[MouseClickCol].Name) + 2;
+      for j := 0 to High(Grid[MouseClickCol + 1]) do
+        ColWidths[MouseClickCol + 1] := max(ColWidths[MouseClickCol + 1],
+          Grid[MouseClickCol][j].MaxWidth(Canvas, CheckListBox) + 2);
+    end;
+  if (MouseClickCol <> -1) and (MouseClickRow <> -1) then
+    if (Grid[MouseClickCol][MouseClickRow].RecordsCount <> 0) then
+      DGExpandButtonClick(MouseClickCol, MouseClickRow, -1)
+    else
+      if (ColCaptions[0].ID <> RowCaptions[0].ID) or
+        ((ColCaptions[0].ID = RowCaptions[0].ID) and (MouseClickRow = MouseClickCol)) then
+        DGAddButtonClick(MouseClickCol, MouseClickRow, -1);
 end;
 
 procedure TScheduleForm.DrawGridDragDrop(Sender, Source: TObject; X, Y: Integer
@@ -219,7 +240,8 @@ var
   ACol, ARow: Integer;
 begin
   DrawGrid.MouseToCell(X, Y, ACol, ARow);
-  if (ACol > 0) and (ARow > 0) then
+  if (ACol > 0) and (ARow > 0) and ((CurRowIndex <> CurColIndex) or
+    ((CurRowIndex = CurColIndex) and (ACol = ARow))) then
     Accept := True
   else
     Accept := False;
@@ -237,73 +259,21 @@ end;
 
 procedure TScheduleForm.SpeedButtonOKClick(Sender: TObject);
 begin
+  CurColIndex := CBColName.ItemIndex;
+  CurRowIndex := CBRowName.ItemIndex;
+  CurOrderByIndex := CBOrderBy.ItemIndex;
   FillDrawGrid;
+  SetRowHeight;
+  SetColWidth;
+  HideEmptyColRow;
   DrawGrid.Invalidate;
   SpeedButtonOK.Down := True;
 end;
 
-procedure TScheduleForm.StringGridDrawCell(Sender: TObject; aCol, aRow: Integer;
-  aRect: TRect; aState: TGridDrawState);
-var
-  ATextHeight, CountChecked: Integer;
-begin
-  with DrawGrid.Canvas do
-  begin
-    ATextHeight := TextHeight('A');
-    CountChecked := CalcChecked;
-    RecordHeight := (CountChecked + 1) * ATextHeight;
-    FillRect(aRect);
-    if (aCol = 0) and (aRow = 0) then
-    begin
-      DrawGrid.DefaultRowHeight := (CountChecked + 1) * ATextHeight;
-      DrawGrid.RowHeights[0] := ATextHeight;
-      HideEmptyColRow;
-    end;
-    if (aCol = 0) and (aRow <> 0) then
-      TextOut(aRect.Left, aRect.Top, RowCaptions[aRow - 1].Name);
-    if (aCol <> 0) and (aRow = 0) then
-      TextOut(aRect.Left, aRect.Top, ColCaptions[aCol - 1].Name);
-  end;
-  if (ACol <> 0) and (ARow <> 0) then
-    Grid[aCol - 1][aRow - 1].Print(DrawGrid.Canvas, aRect);
-end;
-
-procedure TScheduleForm.StringGridSelectCell(Sender: TObject; aCol, aRow: Integer;
-  var CanSelect: Boolean);
-begin
-  DrawGrid.Invalidate;
-  //CanSelect := False;
-end;
-
-procedure TScheduleForm.FillDrawGrid;
-var
-  i, j: Integer;
-begin
-  for i := 0 to High(Grid) do
-    for j := 0 to High(Grid[i]) do
-      Grid[i][j].Free;
-  SetCaptions(CBColName, ColCaptions);
-  SetCaptions(CBRowName, RowCaptions);
-  DrawGrid.ColCount := Length(ColCaptions) + 1;
-  DrawGrid.RowCount := Length(RowCaptions) + 1;
-  SetLength(Grid, Length(ColCaptions));
-  for i := 0 to High(Grid) do
-    SetLength(Grid[i], Length(RowCaptions));
-
-  for i := 0 to High(Grid) do
-    for j := 0 to High(Grid[i]) do
-      Grid[i][j] := TMyCell.Create(i, j, @DGExpandButtonClick, @DGTableButtonClick,
-      @DGAddButtonClick);
-
-  FillGrid;
-  SetColWidth;
-  for i := 0 to High(RowCaptions) do
-    DrawGrid.RowHeights[i + 1] := (CalcChecked + 1) * DrawGrid.Canvas.TextHeight('A');
-end;
-
 procedure TScheduleForm.DGEditButtonClick(ACol, ARow, ARecord: Integer);
 begin
-  CreateNewEditForm(CurTable, ftEdit, Grid[ACol][ARow].Records[ARecord].ID);
+  CreateNewEditForm(CurTable, ftEdit, Grid[ACol][ARow].Records[ARecord].ID,
+    CurColIndex, CurRowIndex);
 end;
 
 procedure TScheduleForm.DGExpandButtonClick(ACol, ARow, ARecord: Integer);
@@ -327,113 +297,44 @@ var
   FormCaption, FormName: string;
 begin
   FormName := 'Schedule' + IntToStr(ACol) + IntToStr(ARow);
-  FormCaption := 'Расписание';//: ' + ColCaptions[ACol].Name + ', ' + RowCaptions[ARow].Name;
-  CreateNewListViewForm(FormName, FormCaption, CurTable, MainFilter.FFilters,
-  CBColName.ItemIndex + 1, CBRowName.ItemIndex + 1, ColCaptions[ACol].Name,
-  RowCaptions[ARow].Name);
+  FormCaption := 'Расписание';
+  CreateNewListViewForm(FormName, FormCaption, CurTable, ftScheduleListView, MainFilter.FFilters,
+  CurColIndex + 1, CurRowIndex + 1, ColCaptions[ACol].Name,
+  RowCaptions[ARow].Name, ColCaptions[ACol].ID, RowCaptions[ARow].ID);
 end;
 
 procedure TScheduleForm.DGAddButtonClick(ACol, ARow, ARecord: Integer);
 begin
-  CreateNewEditForm(CurTable, ftAdd, 0);
-  EditForms[High(EditForms)].SetColRowCB(CBColName.ItemIndex, ColCaptions[ACol].ID,
-  CBRowName.ItemIndex, RowCaptions[ARow].ID);
+  CreateNewEditForm(CurTable, ftAdd, 0, CurColIndex, CurRowIndex);
+  EditForms[High(EditForms)].SetColRowCB(CurColIndex, ColCaptions[ACol].ID,
+  CurRowIndex, RowCaptions[ARow].ID);
 end;
 
-function TScheduleForm.CalcChecked: Integer;
-var
-  i: Integer;
-begin
-  Result := 0;
-  for i := 0 to CheckListBox.Count - 1 do
-    if CheckListBox.Checked[i] then
-      inc(Result);
-end;
-
-procedure TScheduleForm.HideEmptyColRow;
-var
-  i, j: Integer;
-  Empty: Boolean;
-begin
-  if MIHideEmptyCol.Checked then
-    for i := 0 to High(ColCaptions) do
-    begin
-      Empty := True;
-      for j := 0 to High(RowCaptions)  do
-        if Grid[i][j].RecordsCount > 0 then
-          Empty := False;
-      if Empty then
-        DrawGrid.ColWidths[i + 1] := 0;
-    end;
-
-  if MIHideEmptyRow.Checked then
-    for j := 0 to High(RowCaptions) do
-    begin
-      Empty := True;
-      for i := 0 to High(ColCaptions) do
-        if Grid[i][j].RecordsCount > 0 then
-          Empty := False;
-      if Empty then
-        DrawGrid.RowHeights[j + 1] := 0;
-    end;
-end;
-
-function TScheduleForm.OrderBy: string;
-begin
-  with Tables[CurTable] do
-    Result := Format(' ORDER BY %s, %s, %s',
-      [FieldOrderBy((Fields[CBRowName.ItemIndex + 1] as TMyJoinedField).ReferencedTable),
-      FieldOrderBy((Fields[CBColName.ItemIndex + 1] as TMyJoinedField).ReferencedTable),
-      FieldOrderBy((Fields[CBOrderBy.ItemIndex + 1] as TMyJoinedField).ReferencedTable)]);
-  if CBSortType.ItemIndex = 1 then
-    Result += ' DESC';
-end;
-
-procedure TScheduleForm.SetColWidth;
+procedure TScheduleForm.FillDrawGrid;
 var
   i, j: Integer;
 begin
-  with DrawGrid do
-  begin
-    DefaultColWidth := 50;
-    for i := 0 to High(Grid) do
-    begin
-      ColWidths[i + 1] := Canvas.TextWidth(ColCaptions[i].Name) + 2;
-      for j := 0 to High(Grid[i]) do
-        ColWidths[i + 1] := max(ColWidths[i + 1], Grid[i][j].MaxWidth(Canvas) + 2);
-    end;
-    for i := 0 to High(RowCaptions) do
-      ColWidths[0] := Max(ColWidths[0], Canvas.TextWidth(RowCaptions[i].Name) + 2);
-  end;
-end;
-
-procedure TScheduleForm.SetCaptions(AComboBox: TComboBox;
-  var ACaptions: TCaptionsArray);
-begin
-  with SQLQuery do
-  begin
-    Close;
-    with (Tables[CurTable].Fields[AComboBox.ItemIndex + 1] as TMyJoinedField) do
-      SQL.Text := Format('SELECT %s, %s, %s FROM %s ORDER BY 3', [
-        JoinedFieldName, ReferencedField, FieldOrderBy(ReferencedTable), ReferencedTable]);
-    Open;
-  end;
-  SetLength(ACaptions, 0);
-  SQLQuery.First;
-  while not SQLQuery.EOF do
-  begin
-    SetLength(ACaptions, Length(ACaptions) + 1);
-    ACaptions[High(ACaptions)].Name := SQLQuery.Fields.FieldByNumber(1).Value;
-    ACaptions[High(ACaptions)].ID := SQLQuery.Fields.FieldByNumber(2).Value;
-    SQLQuery.Next;
-  end;
+  for i := 0 to High(Grid) do
+    for j := 0 to High(Grid[i]) do
+      Grid[i][j].Free;
+  SetCaptions(CurColIndex, ColCaptions);
+  SetCaptions(CurRowIndex, RowCaptions);
+  DrawGrid.ColCount := Length(ColCaptions) + 1;
+  DrawGrid.RowCount := Length(RowCaptions) + 1;
+  SetLength(Grid, Length(ColCaptions));
+  for i := 0 to High(Grid) do
+    SetLength(Grid[i], Length(RowCaptions));
+  for i := 0 to High(Grid) do
+    for j := 0 to High(Grid[i]) do
+      Grid[i][j] := TMyCell.Create(i, j, @DGExpandButtonClick, @DGTableButtonClick,
+      @DGAddButtonClick);
+  FillGrid;
 end;
 
 procedure TScheduleForm.FillGrid;
 var
-  i, j, CurCol, CurRow: Integer;
+  i, CurCol, CurRow: Integer;
   StringList: TStringList;
-  s: string;
 begin
   with SQLQuery do
     begin
@@ -450,33 +351,36 @@ begin
   StringList := TStringList.Create;
   with SQLQuery do
   begin
-    while not EOF do
+    while (not EOF) and (CurRow <= High(RowCaptions)) do
     begin
-      if FieldByName((Tables[CurTable].Fields[CBRowName.ItemIndex + 1] as TMyJoinedField).ReferencedField).Value
+      if FieldByName((Tables[CurTable].Fields[CurRowIndex + 1] as TMyJoinedField).ReferencedField).Value
         = RowCaptions[CurRow].ID then
       begin
-        if FieldByName((Tables[CurTable].Fields[CBColName.ItemIndex + 1] as TMyJoinedField).ReferencedField).Value
+        if FieldByName((Tables[CurTable].Fields[CurColIndex + 1] as TMyJoinedField).ReferencedField).Value
           = ColCaptions[CurCol].ID then
         begin
           StringList.Clear;
           with Tables[CurTable] do
           begin
             for i := 1 to FieldsCount - 1 do
-              if CheckListBox.Checked[i - 1] then
                 with (Fields[i] as TMyJoinedField) do
-                begin
                   if MIFieldName.Checked then
                     StringList.Add(Format('%s: %s', [JoinedFieldCaption, FieldByName(JoinedFieldName).Text]))
                   else
-                    StringList.Add(FieldByName(JoinedFieldName).Text);
-                end;
+                  StringList.Add(FieldByName(JoinedFieldName).Text);
             StringList.Add('');
             Grid[CurCol][CurRow].AddRecord(StringList, FieldByName(Fields[0].Name).AsInteger,
               @DGEditButtonClick, @DGDeleteButtonClick);
           end;
           Next;
         end else
-          inc(CurCol);
+          if CurCol = High(ColCaptions) then
+          begin
+            CurCol := 0;
+            Inc(CurRow);
+          end
+          else
+            inc(CurCol);
       end else
       begin
         inc(CurRow);
@@ -487,6 +391,118 @@ begin
   StringList.Free;
 end;
 
+procedure TScheduleForm.StringGridDrawCell(Sender: TObject; aCol, aRow: Integer;
+  aRect: TRect; aState: TGridDrawState);
+var
+  CountChecked: Integer;
+begin
+  with DrawGrid.Canvas do
+  begin
+    CountChecked := CheckedCount(CheckListBox);
+    RecordHeight := (CountChecked + 1) * TextHeight('A');
+    FillRect(aRect);
+    if (aCol = 0) and (aRow <> 0) then
+      TextOut(aRect.Left + 1, aRect.Top, RowCaptions[aRow - 1].Name);
+    if (aCol <> 0) and (aRow = 0) then
+      TextOut(aRect.Left + 1, aRect.Top, ColCaptions[aCol - 1].Name);
+  end;
+  if (ACol <> 0) and (ARow <> 0) then
+    Grid[aCol - 1][aRow - 1].Print(DrawGrid.Canvas, aRect, CheckListBox);
+end;
+
+procedure TScheduleForm.HideEmptyColRow;
+var
+  i, j: Integer;
+  Empty: Boolean;
+begin
+    for i := 0 to High(ColCaptions) do
+    begin
+      Empty := True;
+      for j := 0 to High(RowCaptions)  do
+        if Grid[i][j].RecordsCount > 0 then
+          Empty := False;
+      if Empty then
+        if MIHideEmptyCol.Checked then
+          DrawGrid.ColWidths[i + 1] := 0
+        else
+          DrawGrid.ColWidths[i + 1] := DrawGrid.Canvas.TextWidth(ColCaptions[i].Name) + 2;
+    end;
+
+    for j := 0 to High(RowCaptions) do
+    begin
+      Empty := True;
+      for i := 0 to High(ColCaptions) do
+        if Grid[i][j].RecordsCount > 0 then
+          Empty := False;
+      if Empty then
+        if MIHideEmptyRow.Checked then
+          DrawGrid.RowHeights[j + 1] := 0
+        else
+          DrawGrid.RowHeights[j + 1] := RecordHeight;
+    end;
+end;
+
+procedure TScheduleForm.SetColWidth;
+var
+  i, j: Integer;
+begin
+  with DrawGrid do
+  begin
+    for i := 0 to High(Grid) do
+    begin
+      ColWidths[i + 1] := Canvas.TextWidth(ColCaptions[i].Name) + 2;
+      for j := 0 to High(Grid[i]) do
+        ColWidths[i + 1] := max(ColWidths[i + 1], Grid[i][j].MaxWidth(Canvas, CheckListBox) + 2);
+    end;
+    ColWidths[0] := 15;
+    for i := 0 to High(RowCaptions) do
+      ColWidths[0] := Max(ColWidths[0], Canvas.TextWidth(RowCaptions[i].Name) + 2);
+  end;
+end;
+
+procedure TScheduleForm.SetRowHeight;
+var
+  ATextHeight, i: Integer;
+begin
+  ATextHeight := DrawGrid.Canvas.TextHeight('A');
+  for i := 0 to High(RowCaptions) do
+    DrawGrid.RowHeights[i + 1] := (CheckedCount(CheckListBox) + 1) * ATextHeight;
+  DrawGrid.RowHeights[0] := ATextHeight;
+end;
+
+procedure TScheduleForm.SetCaptions(AIndex: Integer;
+  var ACaptions: TCaptionsArray);
+begin
+  with SQLQuery do
+  begin
+    Close;
+    with (Tables[CurTable].Fields[AIndex + 1] as TMyJoinedField) do
+      SQL.Text := Format('SELECT %s, %s, %s FROM %s ORDER BY 3', [
+        JoinedFieldName, ReferencedField, FieldOrderBy(ReferencedTable), ReferencedTable]);
+    Open;
+  end;
+  SetLength(ACaptions, 0);
+  SQLQuery.First;
+  while not SQLQuery.EOF do
+  begin
+    SetLength(ACaptions, Length(ACaptions) + 1);
+    ACaptions[High(ACaptions)].Name := SQLQuery.Fields.FieldByNumber(1).Value;
+    ACaptions[High(ACaptions)].ID := SQLQuery.Fields.FieldByNumber(2).Value;
+    SQLQuery.Next;
+  end;
+end;
+
+function TScheduleForm.OrderBy: string;
+begin
+  with Tables[CurTable] do
+    Result := Format(' ORDER BY %s, %s, %s',
+      [FieldOrderBy((Fields[CurRowIndex + 1] as TMyJoinedField).ReferencedTable),
+      FieldOrderBy((Fields[CurColIndex + 1] as TMyJoinedField).ReferencedTable),
+      FieldOrderBy((Fields[CurOrderByIndex + 1] as TMyJoinedField).ReferencedTable)]);
+  if CBSortType.ItemIndex = 1 then
+    Result += ' DESC';
+end;
+
 procedure TScheduleForm.SQLUpdate(ACol, ARow: Integer);
 var
   s: String;
@@ -495,26 +511,27 @@ begin
     SQLQuery.Close;
     with Tables[CurTable] do
     begin
-      s := Format('UPDATE %s SET %s = %d, %s = %d WHERE ',[Name,
-        (Fields[CBRowName.ItemIndex + 1] as TMyJoinedField).ReferencedField, RowCaptions[ARow].ID,
-        (Fields[CBColName.ItemIndex + 1] as TMyJoinedField).ReferencedField, ColCaptions[ACol].ID]);
+      s := Format('UPDATE %s SET %s = %d',[Name,
+        (Fields[CurRowIndex + 1] as TMyJoinedField).ReferencedField, RowCaptions[ARow].ID]);
+      if CurRowIndex <> CurColIndex then
+         s += Format(', %s = %d', [(Fields[CurColIndex + 1] as TMyJoinedField).ReferencedField,
+           ColCaptions[ACol].ID]);
+      s += ' WHERE ';
       with DragAndDrop do
-        if DragAndDrop.DType = dtOne then
-          s += Format('%s = %d', [Fields[0].Name, Grid[StartCol][StartRow].Records[DragAndDrop.RecordNum].ID])
+        if DType = dtOne then
+          s += Format('%s = %d', [Fields[0].Name, Grid[MouseClickCol][MouseClickRow].Records[DragAndDrop.RecordNum].ID])
         else
         begin
-          for i := 0 to Grid[StartCol][StartRow].RecordsCount - 1 do
-            s += Format('%s = %d OR ', [Fields[0].Name, Grid[StartCol][StartRow].Records[i].ID]);
+          for i := 0 to Grid[MouseClickCol][MouseClickRow].RecordsCount - 1 do
+            s += Format('%s = %d OR ', [Fields[0].Name, Grid[MouseClickCol][MouseClickRow].Records[i].ID]);
           Delete(s, Length(s) - 3, 3);
         end;
     end;
     SQLQuery.SQL.Text := s;
-    //'UPDATE SCHEDULES SET TEACHERID = 107, WEEKDAYID = 607 WHERE PAIRID = 501 OR PAIRID = 502';
     SQLQuery.ExecSQL;
     DataModuleMain.SQLTransaction.Commit;
     EActivateSQL;
     RefreshEditForms;
-  //s := 'UPDATE ' + Tables[CurTable].Name + ' SET';
 end;
 
 end.

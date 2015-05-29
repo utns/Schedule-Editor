@@ -13,12 +13,16 @@ type
   { TMainEditor }
 
   TMainEditor = class
+  private
+    FLable: TLabel;
+    procedure SetLableColor(AValue: TColor);
   public
     constructor Create(AWinControl: TWinControl; ACurTable: Integer; ACurField: Integer);
     function GetValue: String; virtual;
     function GetText: String; virtual;
     procedure Refresh; virtual;
-  end;
+    property LabelColor: TColor write SetLableColor;
+end;
 
   { TMyLookupCB }
 
@@ -69,7 +73,7 @@ begin
     Height := 23;
     Top := -23 + 28 * ACurField;
     Parent := AWinControl;
-    if AFormType = ftEdit then
+    if (AFormType = ftEdit) then
     begin
       Text := ASourceSQLQuery.Fields.FieldByName(Tables[ACurTable].Fields[ACurField].Name).Value;
     end;
@@ -88,10 +92,13 @@ end;
 
 { TMainEditor }
 
+procedure TMainEditor.SetLableColor(AValue: TColor);
+begin
+  FLable.Font.Color := AValue;
+end;
+
 constructor TMainEditor.Create(AWinControl: TWinControl; ACurTable: Integer;
   ACurField: Integer);
-var
-  FLable: TLabel;
 begin
   FLable := TLabel.Create(AWinControl);
   with FLable do
@@ -179,7 +186,7 @@ begin
     Style := csDropDownList;
     KeyField := (Tables[ACurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName;
     ListSource := FDataSource;
-    if AFormType = ftEdit then
+    if (AFormType = ftEdit) then
     begin
       ItemIndex := Items.IndexOf(ASourceSQLQuery.Fields.
         FieldByName((Tables[ACurTable].Fields[ACurField] as TMyJoinedField).JoinedFieldName).Value);

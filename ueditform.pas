@@ -29,6 +29,7 @@ type
     function IsEmptyFields: Boolean;
     procedure RefreshEditors;
     procedure SetColRowCB(AColIndex, AColID, ARowIndex, ARowID: Integer);
+    procedure SetLabelsColor(AFirstLabel, ASecondLabel: Integer);
   private
     FormType: TFormType;
     CurTable: Integer;
@@ -49,10 +50,13 @@ var
   EActivateSQL: TEvent;
   ELocate: TELocate;
   EditForms: array of TEditForm;
+  LastEditFormTableID: Integer;
 
 procedure DeleteSql(ACurTable, AID: Integer; ASQLQuery: TSQLQuery);
 procedure RefreshEditForms;
 procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID: Integer);
+procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType;
+  AID, AFirstLabel, ASecondLabel: Integer);
 
 implementation
 
@@ -89,7 +93,6 @@ begin
       begin
         MessageDlg('Нельзя удалить внешний ключ.', mtError, [mbOK], 0);
         ASQLQuery.SQL.Text := s;
-        //OpenSQLQuery;
       end;
     end;
     RefreshEditForms
@@ -104,20 +107,42 @@ begin
     EditForms[i].RefreshEditors;
 end;
 
+function IsFormOpen(AID: Integer): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  if AID <> 0 then
+    for i := 0 to High(EditForms) do
+      if AID = EditForms[i].Tag then
+      begin
+        Result := True;
+        EditForms[i].ShowOnTop;
+        Exit;
+      end;
+end;
+
 procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType;
   AID: Integer);
 var
   i: Integer;
 begin
-  if AID <> 0 then
-    for i := 0 to High(EditForms) do
-      if AID = EditForms[i].Tag then
-      begin
-        EditForms[i].ShowOnTop;
-        Exit;
-      end;
-  SetLength(EditForms, Length(EditForms) + 1);
-  EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
+  if not IsFormOpen(AID) then
+  begin
+    SetLength(EditForms, Length(EditForms) + 1);
+    EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
+  end;
+end;
+
+procedure CreateNewEditForm(ACurTable: Integer; AFormType: TFormType; AID,
+  AFirstLabel, ASecondLabel: Integer);
+begin
+  if not IsFormOpen(AID) then
+  begin
+    SetLength(EditForms, Length(EditForms) + 1);
+    EditForms[High(EditForms)] := TEditForm.Create(ACurTable, AFormType, AID);
+    EditForms[High(EditForms)].SetLabelsColor(AFirstLabel, ASecondLabel);
+  end;
 end;
 
 {$R *.lfm}
@@ -138,7 +163,7 @@ begin
   CurTable := ACurTable;
   FormType := AFormType;
   Tag := AID;
-  if AFormType = ftEdit then
+  if (AFormType = ftEdit) then
     Caption := 'Редактирование записи'
   else
     Caption := 'Добавление записи';
@@ -197,6 +222,7 @@ begin
     end;
   end;
   Close;
+  LastEditFormTableID := CurTable;
   DataModuleMain.SQLTransaction.Commit;
   EActivateSQL;
   RefreshEditForms;
@@ -324,6 +350,12 @@ procedure TEditForm.SetColRowCB(AColIndex, AColID, ARowIndex, ARowID: Integer);
 begin
   (Editors[ARowIndex] as TMyLookupCB).SetValue(IntToStr(ARowID));
   (Editors[AColIndex] as TMyLookupCB).SetValue(IntToStr(AColID));
+end;
+
+procedure TEditForm.SetLabelsColor(AFirstLabel, ASecondLabel: Integer);
+begin
+  Editors[AFirstLabel].LabelColor := clRed;
+  Editors[ASecondLabel].LabelColor := clRed;
 end;
 
 end.
